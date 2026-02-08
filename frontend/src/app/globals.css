@@ -143,8 +143,8 @@
 /* ── Hero glass CTA panel ── */
 .hero-glass-panel {
   border-radius: 20px;
-  background: oklch(from var(--foreground) l c h / 3%);
-  backdrop-filter: blur(16px);
+  background: oklch(from var(--background) l c h / 92%);
+  backdrop-filter: blur(24px);
   border: 1px solid oklch(from var(--foreground) l c h / 8%);
   box-shadow:
     0 4px 24px oklch(from var(--foreground) l c h / 4%),
@@ -176,21 +176,6 @@
 .hero-auth-input:focus-within {
   border-color: oklch(from var(--foreground) l c h / 20%);
   box-shadow: 0 0 0 3px oklch(from var(--foreground) l c h / 4%);
-}
-
-.hero-auth-submit {
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--foreground);
-  color: var(--background);
-  transition: all 200ms ease;
-}
-.hero-auth-submit:hover {
-  opacity: 0.9;
 }
 
 /* ── Glass button ── */
@@ -484,6 +469,44 @@
   text-shadow: 0em 0.25em 0.05em oklch(from var(--foreground) l c h / 15%);
 }
 
+/* ── Sign-in glass button — dark filled variant ── */
+.glass-button-signin .glass-button {
+  background: linear-gradient(
+    -75deg,
+    oklch(from var(--foreground) l c h / 75%),
+    oklch(from var(--foreground) l c h / 85%),
+    oklch(from var(--foreground) l c h / 75%)
+  );
+  box-shadow:
+    inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 15%),
+    inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 20%),
+    0 0.25em 0.5em -0.125em oklch(from var(--foreground) l c h / 30%),
+    0 0 0.1em 0.25em inset oklch(from var(--background) l c h / 10%);
+}
+
+.glass-button-signin .glass-button::after {
+  background: conic-gradient(
+      from var(--angle-1) at 50% 50%,
+      oklch(from var(--foreground) l c h / 90%) 0%,
+      transparent 5% 40%,
+      oklch(from var(--foreground) l c h / 90%) 50%,
+      transparent 60% 95%,
+      oklch(from var(--foreground) l c h / 90%) 100%
+    ),
+    linear-gradient(
+      180deg,
+      oklch(from var(--foreground) l c h / 30%),
+      oklch(from var(--foreground) l c h / 30%)
+    );
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.glass-button-signin .glass-button-text {
+  color: oklch(from var(--background) l c h / 95%);
+  text-shadow: 0em 0.1em 0.05em oklch(from var(--background) l c h / 15%);
+}
+
 /* ── Brand wordmark (theme override) ── */
 .brand-wordmark {
   font-feature-settings: "liga" 0;
@@ -607,8 +630,8 @@
 /* ── Glass workspace panel — main content card over animated lines ── */
 .glass-workspace-panel {
   border-radius: 24px;
-  background: oklch(from var(--background) l c h / 80%);
-  backdrop-filter: blur(20px);
+  background: oklch(from var(--background) l c h / 92%);
+  backdrop-filter: blur(24px);
   border: 1px solid oklch(from var(--foreground) l c h / 6%);
   box-shadow:
     0 8px 32px oklch(from var(--foreground) l c h / 4%),
