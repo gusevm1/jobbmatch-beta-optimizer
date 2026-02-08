@@ -1,0 +1,41 @@
+{
+  "title": "Senior Full-Stack Developer",
+  "company": "TechCorp Innovation AB",
+  "location": "Stockholm, Sweden",
+  "description": "We are looking for a Senior Full-Stack Developer to join our product team building the next generation of our cloud-based analytics platform. You will work across the entire stack, from designing responsive user interfaces to architecting scalable backend services. Our tech stack includes React, Python, and PostgreSQL, deployed on AWS with a strong emphasis on CI/CD and infrastructure as code.",
+  "requirements": {
+    "required": [
+      "5+ years of professional software development experience",
+      "Strong proficiency in React and/or Next.js",
+      "Backend experience with Python (FastAPI, Django, or Flask)",
+      "Experience with relational databases, particularly PostgreSQL",
+      "Solid understanding of RESTful API design",
+      "Experience with CI/CD pipelines and DevOps practices"
+    ],
+    "preferred": [
+      "TypeScript expertise",
+      "Cloud infrastructure experience (AWS or GCP)",
+      "Containerization with Docker and Kubernetes",
+      "Agile/Scrum methodology experience",
+      "Experience with microservices architecture",
+      "Familiarity with data analytics or business intelligence tools"
+    ]
+  },
+  "keywords": [
+    "full-stack",
+    "React",
+    "Next.js",
+    "Python",
+    "FastAPI",
+    "PostgreSQL",
+    "AWS",
+    "cloud",
+    "agile",
+    "microservices",
+    "CI/CD",
+    "Docker",
+    "Kubernetes",
+    "TypeScript",
+    "REST API"
+  ]
+}

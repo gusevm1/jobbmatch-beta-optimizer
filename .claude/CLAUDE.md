@@ -222,7 +222,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 3: PDF Upload + LaTeX Generation Service `[→]`
+### STEP 3: PDF Upload + LaTeX Generation Service `[x]`
 **Scope:** Implement PDF upload, PDF-to-image conversion, and Claude-based LaTeX generation.
 
 **Actions:**
@@ -241,7 +241,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 4: LaTeX Compilation + Optimization Pipeline `[ ]`
+### STEP 4: LaTeX Compilation + Optimization Pipeline `[→]`
 **Scope:** Implement LaTeX-to-PDF compilation and the full optimization pipeline endpoint.
 
 **Actions:**
