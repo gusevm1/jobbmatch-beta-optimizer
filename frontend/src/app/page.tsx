@@ -20,12 +20,10 @@ export default function Home() {
   const [result, setResult] = useState<CVProcessResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heroExited, setHeroExited] = useState(false);
-  const [linesExiting, setLinesExiting] = useState(false);
   const appSectionRef = useRef<HTMLDivElement>(null);
 
   const handleDiscover = () => {
     setHeroExited(true);
-    setTimeout(() => setLinesExiting(true), 5000);
     setTimeout(() => {
       appSectionRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 600);
@@ -41,7 +39,6 @@ export default function Home() {
 
   const handleBackToHero = () => {
     setHeroExited(false);
-    setLinesExiting(false);
     handleReset();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -91,14 +88,10 @@ export default function Home() {
 
   return (
     <div className={heroExited ? undefined : "h-screen overflow-hidden"}>
-      {/* Persistent floating lines — visible after hero exit, then slowly fades */}
+      {/* Persistent floating lines — visible after hero exit */}
       <div
-        className={`fixed inset-0 z-0 pointer-events-none transition-opacity ${
-          heroExited && !linesExiting
-            ? "opacity-100 duration-300"
-            : heroExited && linesExiting
-              ? "opacity-0 duration-[2000ms]"
-              : "opacity-0 duration-0"
+        className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-300 ${
+          heroExited ? "opacity-100" : "opacity-0"
         }`}
       >
         <div className="absolute -inset-x-0 top-[-10%] bottom-0">
@@ -145,31 +138,36 @@ export default function Home() {
         }`}
       >
         <BackgroundPaths>
-          <div className="flex flex-col items-center">
-            {/* Brand name — large, dominant */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 w-full items-center">
+            {/* Left column — heading */}
             <div className="opacity-0 animate-fade-in-up">
-              <BrandWordmark variant="hero" />
+              <h1 className="hero-heading-split text-foreground">
+                Find your{" "}
+                <span className="font-bold">dream job</span>{" "}
+                faster with AI
+              </h1>
+              <p className="mt-5 max-w-md text-muted-foreground text-base md:text-lg leading-relaxed opacity-0 animate-fade-in-up animate-delay-200">
+                Upload your CV, match with relevant positions, and let AI tailor your application to stand out.
+              </p>
             </div>
 
-            {/* Tagline */}
-            <h1 className="hero-heading text-foreground text-center max-w-4xl opacity-0 animate-fade-in-up animate-delay-200">
-              AI-Powered CV{"\u00A0"}Optimization
-            </h1>
-
-            {/* Subtitle */}
-            <p className="mt-6 max-w-2xl text-center text-foreground text-base md:text-lg opacity-0 animate-fade-in-up animate-delay-400">
-              Upload your CV, find relevant jobs, and use AI-powered tailoring to optimize your CV
-            </p>
-
-            {/* CTA Button */}
-            <div className="mt-10 opacity-0 animate-fade-in-up animate-delay-600">
-              <GlassButton
-                size="lg"
-                className="glass-button-cta"
-                onClick={handleDiscover}
-              >
-                Discover JobbMatch
-              </GlassButton>
+            {/* Right column — glass CTA panel */}
+            <div className="flex justify-center md:justify-end opacity-0 animate-fade-in-up animate-delay-400">
+              <div className="hero-glass-panel w-full max-w-sm p-8 flex flex-col gap-5">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Get started
+                </span>
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  See how JobbMatch optimizes your CV for any role in seconds — powered&nbsp;by&nbsp;Claude.
+                </p>
+                <GlassButton
+                  size="lg"
+                  className="glass-button-cta w-full"
+                  onClick={handleDiscover}
+                >
+                  Discover JobbMatch
+                </GlassButton>
+              </div>
             </div>
           </div>
         </BackgroundPaths>
