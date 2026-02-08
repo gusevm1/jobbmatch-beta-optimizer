@@ -43,96 +43,103 @@ export function UploadKeywordsView({
   const canSearch = !!cvId && chips.length > 0;
 
   return (
-    <div className="w-full max-w-xl mx-auto flex flex-col gap-10">
-      {/* Step 1: Upload */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <StepLabel number={1} text="Upload your CV" />
-        {cvId ? (
-          <div className="glass-drop-zone px-6 py-8 flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/5 shrink-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-foreground/70"
+    <motion.div
+      className="w-full max-w-xl mx-auto glass-workspace-panel px-8 py-10 md:px-10 md:py-12"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="flex flex-col gap-10">
+        {/* Step 1: Upload */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <StepLabel number={1} text="Upload your CV" />
+          {cvId ? (
+            <div className="glass-drop-zone px-6 py-8 flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/5 shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-foreground/70"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">CV uploaded</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Ready for optimization</p>
+              </div>
+              <button
+                onClick={onResetUpload}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors shrink-0"
               >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
+                Change
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">CV uploaded</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Ready for optimization</p>
-            </div>
-            <button
-              onClick={onResetUpload}
-              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors shrink-0"
-            >
-              Change
-            </button>
-          </div>
-        ) : (
-          <CVUpload
-            onUploadStart={onUploadStart}
-            onUploaded={onUploaded}
-            onError={onError}
-          />
-        )}
-      </motion.div>
+          ) : (
+            <CVUpload
+              onUploadStart={onUploadStart}
+              onUploaded={onUploaded}
+              onError={onError}
+            />
+          )}
+        </motion.div>
 
-      {/* Step 2: Keywords */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <div
-          className={`transition-opacity duration-500 ${
-            cvId ? "opacity-100" : "opacity-35 pointer-events-none"
-          }`}
+        {/* Step 2: Keywords */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          <StepLabel number={2} text="Add keywords" />
-          <KeywordSearch
-            chips={chips}
-            onChipsChange={setChips}
-            disabled={!cvId}
-          />
-        </div>
-      </motion.div>
-
-      {/* Find Jobs button */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="flex justify-center"
-      >
-        <div
-          className={`transition-all duration-500 ${
-            canSearch
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4 pointer-events-none"
-          }`}
-        >
-          <GlassButton
-            size="lg"
-            className="glass-button-cta"
-            onClick={() => onSearch(chips)}
-            disabled={!canSearch}
+          <div
+            className={`transition-opacity duration-500 ${
+              cvId ? "opacity-100" : "opacity-35 pointer-events-none"
+            }`}
           >
-            Find Jobs
-          </GlassButton>
-        </div>
-      </motion.div>
-    </div>
+            <StepLabel number={2} text="Add keywords" />
+            <KeywordSearch
+              chips={chips}
+              onChipsChange={setChips}
+              disabled={!cvId}
+            />
+          </div>
+        </motion.div>
+
+        {/* Find Jobs button */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="flex justify-center"
+        >
+          <div
+            className={`transition-all duration-500 ${
+              canSearch
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-4 pointer-events-none"
+            }`}
+          >
+            <GlassButton
+              size="lg"
+              className="glass-button-cta"
+              onClick={() => onSearch(chips)}
+              disabled={!canSearch}
+            >
+              Find Jobs
+            </GlassButton>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }

@@ -124,42 +124,73 @@
   opacity: 1;
 }
 
-/* Hero variant — large dominant brand name */
-.brand-wordmark-hero {
-  font-size: 4rem;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  margin-bottom: 1.5rem;
-}
-
-@media (min-width: 800px) {
-  .brand-wordmark-hero {
-    font-size: 8rem;
-  }
-}
-
-.brand-wordmark-hero .brand-jobb {
+/* ── Hero split heading ── */
+.hero-heading-split {
+  font-family: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   font-weight: 300;
-  opacity: 0.5;
-}
-
-.brand-wordmark-hero .brand-match {
-  font-weight: 700;
-}
-
-/* ── Hero typography ── */
-.hero-heading {
-  font-size: 1.4rem;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  font-weight: 400;
   color: var(--foreground);
 }
 
 @media (min-width: 800px) {
-  .hero-heading {
-    font-size: 2rem;
+  .hero-heading-split {
+    font-size: 4rem;
   }
+}
+
+/* ── Hero glass CTA panel ── */
+.hero-glass-panel {
+  border-radius: 20px;
+  background: oklch(from var(--foreground) l c h / 3%);
+  backdrop-filter: blur(16px);
+  border: 1px solid oklch(from var(--foreground) l c h / 8%);
+  box-shadow:
+    0 4px 24px oklch(from var(--foreground) l c h / 4%),
+    inset 0 1px 0 oklch(from var(--foreground) l c h / 5%);
+}
+
+/* ── Hero auth form elements ── */
+.hero-auth-button {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid oklch(from var(--foreground) l c h / 10%);
+  background: oklch(from var(--foreground) l c h / 2%);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.hero-auth-button:hover {
+  background: oklch(from var(--foreground) l c h / 5%);
+  border-color: oklch(from var(--foreground) l c h / 15%);
+}
+
+.hero-auth-input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid oklch(from var(--foreground) l c h / 10%);
+  background: oklch(from var(--foreground) l c h / 2%);
+  transition: all 200ms ease;
+}
+.hero-auth-input:focus-within {
+  border-color: oklch(from var(--foreground) l c h / 20%);
+  box-shadow: 0 0 0 3px oklch(from var(--foreground) l c h / 4%);
+}
+
+.hero-auth-submit {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--foreground);
+  color: var(--background);
+  transition: all 200ms ease;
+}
+.hero-auth-submit:hover {
+  opacity: 0.9;
 }
 
 /* ── Glass button ── */
@@ -571,6 +602,17 @@
   to {
     transform: translateX(-50%) rotate(calc(var(--orbit-offset, 0deg) + 360deg));
   }
+}
+
+/* ── Glass workspace panel — main content card over animated lines ── */
+.glass-workspace-panel {
+  border-radius: 24px;
+  background: oklch(from var(--background) l c h / 80%);
+  backdrop-filter: blur(20px);
+  border: 1px solid oklch(from var(--foreground) l c h / 6%);
+  box-shadow:
+    0 8px 32px oklch(from var(--foreground) l c h / 4%),
+    inset 0 1px 0 oklch(from var(--foreground) l c h / 4%);
 }
 
 /* ── Glass drop zone ── */
