@@ -478,9 +478,9 @@
   width: 100%;
   background: linear-gradient(
     -75deg,
-    oklch(from var(--foreground) l c h / 8%),
-    oklch(from var(--foreground) l c h / 14%),
-    oklch(from var(--foreground) l c h / 8%)
+    oklch(from var(--foreground) l c h / 3%),
+    oklch(from var(--foreground) l c h / 6%),
+    oklch(from var(--foreground) l c h / 3%)
   );
 }
 
