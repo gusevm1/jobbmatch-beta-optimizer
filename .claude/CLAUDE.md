@@ -382,5 +382,37 @@ _This section is updated by Claude instances as they complete tasks. Add entries
 ## CURRENT STATE
 
 **Last completed step:** STEP 8 (Integration testing + polish)
-**Last instance notes:** All core steps (1-8) complete. Backend and frontend build clean. README updated with full setup instructions. Only STEP 9 (stretch: diff highlighting) remains.
-**Known blockers:** None
+**Last instance notes:** All core steps (1-8) complete. Integration testing revealed bugs that need fixing.
+**Known blockers:** See DEBUGGING TASKS below
+
+---
+
+## DEBUGGING TASKS (post-Step 8)
+
+Issues discovered during live end-to-end testing with Docker:
+
+### BUG 1: Wrong Anthropic model ID `[→]`
+**File:** `backend/src/services/anthropic_client.py` line 7
+**Error:** `Error code: 404 - model: claude-opus-4-6-20250219`
+**Root cause:** The model ID `claude-opus-4-6-20250219` is not valid. Need to use the correct model identifier.
+**Fix:** Change MODEL to a valid model ID. Check Anthropic API docs or use `claude-sonnet-4-5-20250514` as a reliable alternative. The correct Opus 4.6 ID may be `claude-opus-4-6-20250609`.
+
+### BUG 2: No server-side error logging `[ ]`
+**File:** `backend/src/main.py`
+**Problem:** 500 errors don't show tracebacks in Docker logs — only the HTTP status line. Makes debugging very difficult.
+**Fix:** Add exception logging middleware or configure Python logging to print tracebacks to stdout.
+
+### BUG 3: Frontend shows generic "Failed to fetch" / "Internal Server Error" `[ ]`
+**File:** `frontend/src/lib/api-client.ts`
+**Problem:** The frontend only shows `res.statusText` which is generic. Should parse the JSON error detail from the backend response.
+**Fix:** In `uploadCV` and `processCV`, read the response body for error detail:
+```typescript
+if (!res.ok) {
+  const body = await res.json().catch(() => null);
+  throw new Error(body?.detail || `Processing failed: ${res.statusText}`);
+}
+```
+
+### BUG 4: Process endpoint timeout risk `[ ]`
+**Problem:** The `/api/cv/process` endpoint runs the full pipeline (PDF→images→Claude→LaTeX→optimize→compile) synchronously. This can take 60-120+ seconds. Browser fetch may timeout.
+**Potential fix:** For now, document that processing takes time. Long-term: consider SSE or polling.

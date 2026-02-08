@@ -4,7 +4,7 @@ import anthropic
 
 from src.config import settings
 
-MODEL = "claude-opus-4-6-20250219"
+MODEL = "claude-sonnet-4-20250514"
 
 _client: anthropic.AsyncAnthropic | None = None
 

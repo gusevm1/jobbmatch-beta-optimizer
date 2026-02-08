@@ -1,4 +1,5 @@
 import json
+import logging
 import shutil
 import uuid
 from pathlib import Path
@@ -12,6 +13,8 @@ from src.services.cv_optimizer import optimize_cv
 from src.services.latex_compiler import compile_latex
 from src.services.latex_generator import generate_latex
 from src.services.pdf_parser import pdf_to_images
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter()
 
@@ -59,12 +62,14 @@ async def process_cv(request: CVProcessRequest):
     try:
         images = pdf_to_images(pdf_path)
     except Exception as e:
+        logger.error(f"Failed to parse PDF: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to parse PDF: {e}")
 
     # Step 2: Generate LaTeX from images via Claude
     try:
         original_latex = await generate_latex(images)
     except Exception as e:
+        logger.error(f"Failed to generate LaTeX from PDF: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate LaTeX from PDF: {e}")
 
     generated_dir = settings.DATA_DIR / "generated" / cv_id
@@ -78,12 +83,14 @@ async def process_cv(request: CVProcessRequest):
         final_original = generated_dir / f"{cv_id}_original.pdf"
         shutil.copy2(original_pdf, final_original)
     except RuntimeError as e:
+        logger.error(f"Failed to compile original LaTeX: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to compile original LaTeX: {e}")
 
     # Step 4: Optimize LaTeX for job description
     try:
         optimized_latex, changes_summary = await optimize_cv(original_latex, job_description)
     except Exception as e:
+        logger.error(f"Failed to optimize CV: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to optimize CV: {e}")
 
     # Step 5: Compile optimized LaTeX to PDF
@@ -93,6 +100,7 @@ async def process_cv(request: CVProcessRequest):
         final_optimized = generated_dir / f"{cv_id}_optimized.pdf"
         shutil.copy2(optimized_pdf, final_optimized)
     except RuntimeError as e:
+        logger.error(f"Failed to compile optimized LaTeX: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to compile optimized LaTeX: {e}")
 
     return CVProcessResponse(

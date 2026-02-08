@@ -1,11 +1,26 @@
+import logging
+import traceback
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 
 from src.api.routes.cv import router as cv_router
 from src.api.routes.health import router as health_router
 from src.config import settings
+
+logger = logging.getLogger("uvicorn.error")
+
+
+class LogExceptionsMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception as e:
+            logger.error(f"Unhandled error: {e}\n{traceback.format_exc()}")
+            raise
 
 
 @asynccontextmanager
@@ -19,6 +34,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="JobbMatch Beta Optimizer API", lifespan=lifespan)
+
+app.add_middleware(LogExceptionsMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

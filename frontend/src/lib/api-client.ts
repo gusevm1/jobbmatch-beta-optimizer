@@ -7,7 +7,10 @@ export async function uploadCV(file: File): Promise<{ id: string; filename: stri
     method: "POST",
     body: formData,
   });
-  if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.detail || `Upload failed: ${res.statusText}`);
+  }
   return res.json();
 }
 
@@ -17,13 +20,23 @@ export async function processCV(id: string): Promise<{
   optimized_pdf_url: string;
   changes_summary: string;
 }> {
-  const res = await fetch(`${API_BASE}/api/cv/process`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-  if (!res.ok) throw new Error(`Processing failed: ${res.statusText}`);
-  return res.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 300000); // 5 min
+  try {
+    const res = await fetch(`${API_BASE}/api/cv/process`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail || `Processing failed: ${res.statusText}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function getOriginalPdfUrl(id: string): string {
