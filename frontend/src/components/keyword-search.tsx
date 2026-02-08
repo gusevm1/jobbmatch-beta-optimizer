@@ -8,6 +8,19 @@ interface KeywordSearchProps {
   disabled?: boolean;
 }
 
+const SUGGESTIONS = [
+  "data engineering",
+  "Python",
+  "cloud",
+  "SQL",
+  "machine learning",
+  "Java",
+  "CI/CD",
+  "Kubernetes",
+  "DevOps",
+  "deep learning",
+];
+
 export function KeywordSearch({ chips, onChipsChange, disabled }: KeywordSearchProps) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,43 +52,67 @@ export function KeywordSearch({ chips, onChipsChange, disabled }: KeywordSearchP
     [inputValue, chips, addChip, removeChip]
   );
 
+  // Filter out suggestions that are already added as chips
+  const availableSuggestions = SUGGESTIONS.filter(
+    (s) => !chips.includes(s.toLowerCase())
+  );
+
   return (
-    <div className="w-full flex flex-col gap-4">
-      <div
-        className={`glass-input-container flex flex-wrap items-center gap-2 px-4 py-3 min-h-[52px] cursor-text ${
-          disabled ? "opacity-50 pointer-events-none" : ""
-        }`}
-        onClick={() => inputRef.current?.focus()}
-      >
-        {chips.map((chip, i) => (
-          <span key={`${chip}-${i}`} className="glass-chip text-xs font-mono">
-            {chip}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeChip(i);
-              }}
-              className="ml-0.5 text-muted-foreground hover:text-foreground transition-colors leading-none"
-            >
-              &times;
-            </button>
-          </span>
-        ))}
+    <div className={`w-full flex flex-col gap-4 ${disabled ? "opacity-50 pointer-events-none" : ""}`}>
+      {/* Input field — clean, clear text box */}
+      <div className="glass-input-container px-4 py-3.5">
         <input
           ref={inputRef}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={chips.length === 0 ? "Type a keyword and press Enter..." : "Add another..."}
+          placeholder="e.g. data engineering, Python, cloud..."
           disabled={disabled}
-          className="flex-1 min-w-[120px] bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
         />
       </div>
-      <p className="text-xs text-muted-foreground/60">
-        Press Enter to add keywords &middot; Backspace to remove
+
+      {/* Helper text */}
+      <p className="text-xs text-muted-foreground/50">
+        Press Enter to add &middot; click suggestions below
       </p>
+
+      {/* Active chips — glass bubbles below the input */}
+      {chips.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {chips.map((chip, i) => (
+            <span key={`${chip}-${i}`} className="keyword-chip">
+              <span className="keyword-chip-text">
+                {chip}
+                <button
+                  type="button"
+                  onClick={() => removeChip(i)}
+                  className="ml-1.5 opacity-50 hover:opacity-100 transition-opacity leading-none"
+                >
+                  &times;
+                </button>
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Suggestions — shown when no chips or few chips */}
+      {availableSuggestions.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {availableSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => addChip(suggestion)}
+              className="keyword-suggestion"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
