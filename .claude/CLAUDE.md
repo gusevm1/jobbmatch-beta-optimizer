@@ -263,7 +263,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 5: Frontend Foundation `[ ]`
+### STEP 5: Frontend Foundation `[x]`
 **Scope:** Initialize Next.js project with TailwindCSS and shadcn/ui.
 
 **Actions:**
@@ -281,7 +281,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 6: Frontend — Upload Component + Processing Flow `[ ]`
+### STEP 6: Frontend — Upload Component + Processing Flow `[x]`
 **Scope:** Build the CV upload component with drag-and-drop and processing state management.
 
 **Actions:**
@@ -306,7 +306,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 7: Frontend — Side-by-Side PDF Comparison `[ ]`
+### STEP 7: Frontend — Side-by-Side PDF Comparison `[x]`
 **Scope:** Build the PDF viewer and side-by-side comparison view.
 
 **Actions:**
@@ -329,7 +329,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 8: Integration Testing + Polish `[ ]`
+### STEP 8: Integration Testing + Polish `[x]`
 **Scope:** End-to-end testing, error handling, and demo readiness.
 
 **Actions:**
@@ -381,6 +381,6 @@ _This section is updated by Claude instances as they complete tasks. Add entries
 
 ## CURRENT STATE
 
-**Last completed step:** STEP 4 (LaTeX compilation + optimization pipeline)
-**Last instance notes:** Backend fully implemented — FastAPI with health check, PDF upload, Claude-based LaTeX generation, CV optimization, LaTeX compilation, and file serving endpoints. Docker + TexLive configured.
+**Last completed step:** STEP 8 (Integration testing + polish)
+**Last instance notes:** All core steps (1-8) complete. Backend and frontend build clean. README updated with full setup instructions. Only STEP 9 (stretch: diff highlighting) remains.
 **Known blockers:** None
