@@ -90,7 +90,7 @@ export default function Home() {
     <div className={heroExited ? undefined : "h-screen overflow-hidden"}>
       {/* Persistent floating lines — visible after hero exit */}
       <div
-        className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[1] pointer-events-none transition-opacity duration-300 ${
           heroExited ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -176,7 +176,7 @@ export default function Home() {
       {/* App Section — Upload + Keywords → Jobs → Processing → Results */}
       <section
         ref={appSectionRef}
-        className={`relative z-10 min-h-screen bg-background px-5 md:px-10 pt-24 pb-16 transition-all duration-700 ease-out ${
+        className={`relative min-h-screen px-5 md:px-10 pt-24 pb-16 transition-all duration-700 ease-out ${
           heroExited
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-8 pointer-events-none"
