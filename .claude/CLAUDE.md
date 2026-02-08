@@ -175,7 +175,7 @@ Note: The `/api/cv/process` endpoint runs the entire pipeline in one call (conve
 
 Each task is designed for ONE Claude Code instance. Work sequentially.
 
-### STEP 1: Repository Initialization + GitHub Remote `[ ]`
+### STEP 1: Repository Initialization + GitHub Remote `[x]`
 **Scope:** Initialize the project repository and push to GitHub.
 
 **Actions:**
@@ -191,7 +191,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 2: Backend Foundation `[ ]`
+### STEP 2: Backend Foundation `[→]`
 **Scope:** Set up FastAPI skeleton with health check, CORS, config, and Docker.
 
 **Actions:**
@@ -379,6 +379,6 @@ _This section is updated by Claude instances as they complete tasks. Add entries
 
 ## CURRENT STATE
 
-**Last completed step:** None (project not started)
-**Last instance notes:** N/A
+**Last completed step:** STEP 1 (repo init + GitHub remote)
+**Last instance notes:** Repo created at https://github.com/gusevm1/jobbmatch-beta-optimizer
 **Known blockers:** None

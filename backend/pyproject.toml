@@ -1,0 +1,9 @@
+[project]
+name = "jobbmatch-beta-optimizer-backend"
+version = "0.1.0"
+description = "Backend API for JobbMatch Beta Optimizer — CV optimization powered by Claude AI"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
