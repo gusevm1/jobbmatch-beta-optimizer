@@ -98,8 +98,12 @@ export function KeywordSearch({ chips, onChipsChange, disabled }: KeywordSearchP
         </div>
       )}
 
-      {/* Suggestions — shown when no chips or few chips */}
+      {/* Suggestions */}
       {availableSuggestions.length > 0 && (
+        <div className="flex flex-col gap-2.5">
+        <p className="text-xs text-muted-foreground/50">
+          Suggested keywords based on your CV &middot; click to add
+        </p>
         <div className="flex flex-wrap gap-2">
           {availableSuggestions.map((suggestion) => (
             <button
@@ -111,6 +115,7 @@ export function KeywordSearch({ chips, onChipsChange, disabled }: KeywordSearchP
               {suggestion}
             </button>
           ))}
+        </div>
         </div>
       )}
     </div>
