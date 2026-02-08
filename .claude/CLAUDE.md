@@ -191,7 +191,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 2: Backend Foundation `[→]`
+### STEP 2: Backend Foundation `[x]`
 **Scope:** Set up FastAPI skeleton with health check, CORS, config, and Docker.
 
 **Actions:**
@@ -222,7 +222,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 3: PDF Upload + LaTeX Generation Service `[ ]`
+### STEP 3: PDF Upload + LaTeX Generation Service `[→]`
 **Scope:** Implement PDF upload, PDF-to-image conversion, and Claude-based LaTeX generation.
 
 **Actions:**
