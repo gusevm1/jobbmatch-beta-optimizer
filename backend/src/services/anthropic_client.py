@@ -37,7 +37,9 @@ async def generate_latex_from_images(images: list[bytes]) -> str:
             "- Use \\documentclass{article} with standard packages\n"
             "- Must compile with xelatex\n"
             "- Faithfully reproduce the layout, formatting, sections, and all text content\n"
-            "- Use packages like geometry, enumitem, titlesec, fontspec as needed\n"
+            "- Use packages like geometry, enumitem, titlesec, hyperref as needed\n"
+            "- For fonts: use fontspec with ONLY DejaVu fonts (DejaVu Sans, DejaVu Serif, DejaVu Sans Mono) "
+            "or use the default Latin Modern fonts. Do NOT use any other font names.\n"
             "- Ensure all special characters are properly escaped\n"
             "- The document must be complete (\\begin{document} to \\end{document})"
         ),

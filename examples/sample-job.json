@@ -1,41 +1,58 @@
 {
-  "title": "Senior Full-Stack Developer",
-  "company": "TechCorp Innovation AB",
-  "location": "Stockholm, Sweden",
-  "description": "We are looking for a Senior Full-Stack Developer to join our product team building the next generation of our cloud-based analytics platform. You will work across the entire stack, from designing responsive user interfaces to architecting scalable backend services. Our tech stack includes React, Python, and PostgreSQL, deployed on AWS with a strong emphasis on CI/CD and infrastructure as code.",
+  "title": "Summer Internship - Data Engineering",
+  "company": "H&M Group",
+  "location": "Årstaängsvägen, Stockholm, Sweden",
+  "type": "Full-time internship (11 weeks, June 9 - August 21)",
+  "description": "As a Data Engineering Intern at H&M, you will get the opportunity to spend 11 weeks learning about our business and different functions while getting real-life experience working on current projects. You will work next to the AI, Analytics, & Data Tech Center who will play a key role in developing your skills. This is your chance to launch a stellar career and help us transform the fashion world.",
+  "responsibilities": [
+    "Contribute to real projects – Help develop and optimize complex AI & data pipelines, ensuring smooth data flow across multiple domains",
+    "Collaborate with cross-functional teams – Work with engineers, data scientists, and designers to build innovative tech products",
+    "Learn from experienced Data engineers – Participate in code reviews, troubleshooting, and debugging sessions",
+    "Gain exposure to modern development tools – Work with agile methodologies, cloud platforms, and industry-standard tools",
+    "Explore new technologies – Stay up to date with emerging trends and best practices in Data & AI engineering"
+  ],
+  "learning_opportunities": [
+    "Hands-on experience working with multi-cloud environments (such as GCP)",
+    "Coding skills in JavaScript, Python, Go/Golang, YAML, Java",
+    "Problem-solving skills through real-world challenges",
+    "Version control (Git), CI/CD pipelines, automating and streamlining the software development lifecycle",
+    "Mentorship and career-building guidance from experienced tech leaders"
+  ],
   "requirements": {
     "required": [
-      "5+ years of professional software development experience",
-      "Strong proficiency in React and/or Next.js",
-      "Backend experience with Python (FastAPI, Django, or Flask)",
-      "Experience with relational databases, particularly PostgreSQL",
-      "Solid understanding of RESTful API design",
-      "Experience with CI/CD pipelines and DevOps practices"
+      "Currently enrolled in a university program (e.g., Computer Science, Engineering, or related field) in the later stages of academic career",
+      "Basic knowledge of software development principles, algorithms, and data structures",
+      "Experience with one or more programming languages (Java, SQL, Python, JavaScript, etc.)",
+      "Familiar with version control systems (Git, GitHub)",
+      "A curious problem-solver eager to learn and grow in a fast-paced environment",
+      "Fluent in English, both written and verbal"
     ],
     "preferred": [
-      "TypeScript expertise",
-      "Cloud infrastructure experience (AWS or GCP)",
-      "Containerization with Docker and Kubernetes",
-      "Agile/Scrum methodology experience",
-      "Experience with microservices architecture",
-      "Familiarity with data analytics or business intelligence tools"
+      "Experience with cloud platforms (GCP, AWS)",
+      "Knowledge of data pipeline tools and frameworks",
+      "Experience with CI/CD pipelines",
+      "Familiarity with agile methodologies",
+      "Interest in AI and machine learning",
+      "Experience with Go/Golang or YAML"
     ]
   },
   "keywords": [
-    "full-stack",
-    "React",
-    "Next.js",
+    "data engineering",
+    "data pipelines",
+    "AI",
     "Python",
-    "FastAPI",
-    "PostgreSQL",
-    "AWS",
+    "Java",
+    "JavaScript",
+    "Go",
+    "GCP",
     "cloud",
-    "agile",
-    "microservices",
+    "Git",
     "CI/CD",
-    "Docker",
-    "Kubernetes",
-    "TypeScript",
-    "REST API"
+    "agile",
+    "SQL",
+    "data structures",
+    "algorithms",
+    "cross-functional",
+    "problem-solving"
   ]
 }
