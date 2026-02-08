@@ -713,8 +713,8 @@
   padding: 5px 12px;
   border-radius: 9999px;
   font-size: 0.75rem;
-  color: oklch(from var(--foreground) l c h / 40%);
-  border: 1px dashed oklch(from var(--foreground) l c h / 10%);
+  color: oklch(from var(--foreground) l c h / 60%);
+  border: 1px dashed oklch(from var(--foreground) l c h / 15%);
   background: transparent;
   cursor: pointer;
   transition: all 200ms ease;

@@ -19,7 +19,7 @@ interface UploadKeywordsViewProps {
 function StepLabel({ number, text }: { number: number; text: string }) {
   return (
     <div className="flex items-baseline gap-3 mb-5">
-      <span className="font-brand text-3xl font-light text-foreground/20 tabular-nums">
+      <span className="font-brand text-3xl font-light text-foreground/40 tabular-nums">
         {number}.
       </span>
       <h3 className="text-lg font-medium text-foreground tracking-tight">
@@ -131,7 +131,7 @@ export function UploadKeywordsView({
           >
             <GlassButton
               size="lg"
-              className="glass-button-cta"
+              className="glass-button-signin"
               onClick={() => onSearch(chips)}
               disabled={!canSearch}
             >

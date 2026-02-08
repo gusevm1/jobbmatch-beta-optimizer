@@ -69,12 +69,12 @@ export function KeywordSearch({ chips, onChipsChange, disabled }: KeywordSearchP
           onKeyDown={handleKeyDown}
           placeholder="e.g. data engineering, Python, cloud..."
           disabled={disabled}
-          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
       </div>
 
       {/* Helper text */}
-      <p className="text-xs text-muted-foreground/50">
+      <p className="text-xs text-muted-foreground">
         Press Enter to add &middot; click suggestions below
       </p>
 
@@ -101,7 +101,7 @@ export function KeywordSearch({ chips, onChipsChange, disabled }: KeywordSearchP
       {/* Suggestions */}
       {availableSuggestions.length > 0 && (
         <div className="flex flex-col gap-2.5">
-        <p className="text-xs text-muted-foreground/50">
+        <p className="text-xs text-muted-foreground">
           Suggested keywords based on your CV &middot; click to add
         </p>
         <div className="flex flex-wrap gap-2">

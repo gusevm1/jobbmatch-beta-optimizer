@@ -286,8 +286,7 @@ class SpiralController {
         const ctx = this.ctx;
         if (!ctx) return;
 
-        ctx.fillStyle = this.bgColor;
-        ctx.fillRect(0, 0, this.width, this.height);
+        ctx.clearRect(0, 0, this.width, this.height);
 
         ctx.save();
         ctx.translate(this.width / 2, this.height / 2);
@@ -465,10 +464,10 @@ export function BackgroundPaths({
     return (
         <div className="relative h-screen w-full flex flex-col items-center overflow-hidden bg-background">
             <div className="absolute -inset-x-0 top-[-10%] bottom-0 pointer-events-none">
-                {/* Phase 1: Spiral — plays once then fades out */}
+                {/* Phase 1: Spiral — plays once then fades out, reduced intensity */}
                 <div
                     className={`absolute inset-0 transition-opacity duration-[2000ms] ease-out ${
-                        spiralDone ? "opacity-0 pointer-events-none" : "opacity-100"
+                        spiralDone ? "opacity-0 pointer-events-none" : "opacity-40"
                     }`}
                 >
                     <SpiralBackground onComplete={handleSpiralComplete} onNearEnd={handleSpiralNearEnd} />
@@ -485,7 +484,7 @@ export function BackgroundPaths({
                 </div>
             </div>
 
-            <div className="relative z-10 mt-[22vh] container mx-auto px-4 md:px-6 text-center">
+            <div className="relative z-10 flex items-center h-full w-full max-w-7xl mx-auto px-6 md:px-10 lg:px-16 pt-16">
                 {children}
             </div>
         </div>
