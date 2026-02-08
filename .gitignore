@@ -1,0 +1,24 @@
+# Runtime data
+data/uploads/
+data/generated/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+.next/
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
