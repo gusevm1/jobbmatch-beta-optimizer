@@ -469,7 +469,7 @@
   text-shadow: 0em 0.25em 0.05em oklch(from var(--foreground) l c h / 15%);
 }
 
-/* ── Sign-in glass button — dark grey filled variant ── */
+/* ── Sign-in glass button — translucent with strong border ── */
 .glass-button-signin {
   width: 100%;
 }
@@ -478,25 +478,20 @@
   width: 100%;
   background: linear-gradient(
     -75deg,
-    oklch(from var(--foreground) l c h / 65%),
-    oklch(from var(--foreground) l c h / 72%),
-    oklch(from var(--foreground) l c h / 65%)
+    oklch(from var(--foreground) l c h / 8%),
+    oklch(from var(--foreground) l c h / 14%),
+    oklch(from var(--foreground) l c h / 8%)
   );
-  box-shadow:
-    inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 10%),
-    inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 15%),
-    0 0.25em 0.5em -0.125em oklch(from var(--foreground) l c h / 20%),
-    0 0 0.1em 0.25em inset oklch(from var(--background) l c h / 8%);
 }
 
 .glass-button-signin .glass-button::after {
   background: conic-gradient(
       from var(--angle-1) at 50% 50%,
-      oklch(from var(--foreground) l c h / 70%) 0%,
+      oklch(from var(--foreground) l c h / 80%) 0%,
       transparent 5% 40%,
-      oklch(from var(--foreground) l c h / 70%) 50%,
+      oklch(from var(--foreground) l c h / 80%) 50%,
       transparent 60% 95%,
-      oklch(from var(--foreground) l c h / 70%) 100%
+      oklch(from var(--foreground) l c h / 80%) 100%
     ),
     linear-gradient(
       180deg,
@@ -508,8 +503,8 @@
 }
 
 .glass-button-signin .glass-button-text {
-  color: oklch(from var(--background) l c h / 95%);
-  text-shadow: 0em 0.1em 0.05em oklch(from var(--background) l c h / 10%);
+  color: oklch(from var(--foreground) l c h / 90%);
+  text-shadow: 0em 0.25em 0.05em oklch(from var(--foreground) l c h / 10%);
 }
 
 /* ── Brand wordmark (theme override) ── */
