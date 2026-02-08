@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { GlassButton } from "@/components/ui/glass-button";
 
 interface CVUploadProps {
   onUploadStart: () => void;
@@ -18,7 +17,7 @@ export function CVUpload({
 }: CVUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = useCallback(
@@ -43,8 +42,10 @@ export function CVUpload({
       const dropped = e.dataTransfer.files[0];
       if (dropped && validateFile(dropped)) {
         setFile(dropped);
+        handleUpload(dropped);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateFile]
   );
 
@@ -53,26 +54,26 @@ export function CVUpload({
       const selected = e.target.files?.[0];
       if (selected && validateFile(selected)) {
         setFile(selected);
+        handleUpload(selected);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateFile]
   );
 
-  const handleSubmit = useCallback(async () => {
-    if (!file) return;
-    setIsSubmitting(true);
-
+  const handleUpload = async (f: File) => {
+    setIsUploading(true);
     try {
       const { uploadCV } = await import("@/lib/api-client");
       onUploadStart();
-      const { id } = await uploadCV(file);
+      const { id } = await uploadCV(f);
       onUploaded(id);
     } catch (err) {
       onError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
-      setIsSubmitting(false);
+      setIsUploading(false);
     }
-  }, [file, onUploadStart, onUploaded, onError]);
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -81,7 +82,7 @@ export function CVUpload({
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-8">
+    <div className="w-full">
       {/* Drop zone */}
       <div
         onDragOver={(e) => {
@@ -90,21 +91,24 @@ export function CVUpload({
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        onClick={() => !file && fileInputRef.current?.click()}
+        onClick={() => !file && !isUploading && fileInputRef.current?.click()}
         className={`
-          group w-full cursor-pointer rounded-2xl border-2 border-dashed
-          px-6 py-16 transition-all duration-300
-          ${
-            isDragging
-              ? "border-foreground/40 bg-foreground/[0.03]"
-              : file
-                ? "border-foreground/20 bg-foreground/[0.02]"
-                : "border-border hover:border-foreground/30 hover:bg-foreground/[0.02]"
-          }
+          group w-full cursor-pointer px-6 py-14 glass-drop-zone
+          ${isDragging ? "glass-drop-zone-dragging" : ""}
         `}
       >
         <div className="flex flex-col items-center gap-4">
-          {file ? (
+          {isUploading ? (
+            <>
+              <div className="flex h-12 w-12 items-center justify-center">
+                <svg className="animate-spin h-6 w-6 text-foreground/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              </div>
+              <p className="text-sm text-muted-foreground">Uploading...</p>
+            </>
+          ) : file ? (
             <>
               {/* File selected state */}
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground/5">
@@ -131,16 +135,6 @@ export function CVUpload({
                   {formatFileSize(file.size)}
                 </p>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFile(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
-                className="font-mono text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground transition-colors"
-              >
-                Choose a different file
-              </button>
             </>
           ) : (
             <>
@@ -184,23 +178,6 @@ export function CVUpload({
         onChange={handleFileSelect}
         className="hidden"
       />
-
-      {/* Submit button — only visible when file selected */}
-      <div
-        className={`transition-all duration-500 ${
-          file
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-4 pointer-events-none"
-        }`}
-      >
-        <GlassButton
-          size="lg"
-          onClick={handleSubmit}
-          disabled={!file || isSubmitting}
-        >
-          Upload CV
-        </GlassButton>
-      </div>
     </div>
   );
 }

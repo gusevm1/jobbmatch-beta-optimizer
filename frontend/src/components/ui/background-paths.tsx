@@ -146,6 +146,8 @@ class SpiralController {
     private height: number;
     private stars: Star[] = [];
     private onCompleteCallback: (() => void) | null = null;
+    private onNearEndCallback: (() => void) | null = null;
+    private nearEndFired = false;
 
     public bgColor = "#0a0a0a";
     public fgRgb = "250,250,250";
@@ -163,12 +165,14 @@ class SpiralController {
         ctx: CanvasRenderingContext2D,
         width: number,
         height: number,
-        onComplete?: () => void
+        onComplete?: () => void,
+        onNearEnd?: () => void
     ) {
         this.ctx = ctx;
         this.width = width;
         this.height = height;
         this.onCompleteCallback = onComplete || null;
+        this.onNearEndCallback = onNearEnd || null;
         this.timeline = gsap.timeline();
 
         const rand = createSeededRandom(1234);
@@ -181,7 +185,14 @@ class SpiralController {
             time: 1,
             duration: 15,
             ease: "none",
-            onUpdate: () => this.render(),
+            onUpdate: () => {
+                // Fire near-end callback 1s before completion
+                if (!this.nearEndFired && this.time >= 14 / 15) {
+                    this.nearEndFired = true;
+                    this.onNearEndCallback?.();
+                }
+                this.render();
+            },
             onComplete: () => {
                 this.onCompleteCallback?.();
             },
@@ -256,8 +267,8 @@ class SpiralController {
             const rx = mid.x + r * (1 + bounce) * Math.cos(angle + o * Math.PI * this.easeOutElastic(ep));
             const ry = mid.y + r * (1 + bounce) * Math.sin(angle + o * Math.PI * this.easeOutElastic(ep));
 
-            // More transparent trail (0.3 * f instead of 0.6 * f)
-            ctx.fillStyle = `rgba(${this.fgRgb}, ${0.3 * f})`;
+            // Subtle trail
+            ctx.fillStyle = `rgba(${this.fgRgb}, ${0.15 * f})`;
             ctx.beginPath();
             ctx.arc(rx, ry, Math.max(sw / 2, 0.3), 0, Math.PI * 2);
             ctx.fill();
@@ -288,8 +299,8 @@ class SpiralController {
 
         this.drawTrail(t1);
 
-        // More transparent stars (0.4 instead of 0.85)
-        ctx.fillStyle = `rgba(${this.fgRgb}, 0.4)`;
+        // Subtle stars
+        ctx.fillStyle = `rgba(${this.fgRgb}, 0.2)`;
         for (const star of this.stars) {
             star.render(t1, this);
         }
@@ -310,7 +321,7 @@ class SpiralController {
 
 // ── Phase 1: Spiral canvas (plays once, then fades out) ──
 
-function SpiralBackground({ onComplete }: { onComplete: () => void }) {
+function SpiralBackground({ onComplete, onNearEnd }: { onComplete: () => void; onNearEnd?: () => void }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const controllerRef = useRef<SpiralController | null>(null);
 
@@ -332,7 +343,7 @@ function SpiralBackground({ onComplete }: { onComplete: () => void }) {
         controllerRef.current?.destroy();
 
         const colors = getThemeColors();
-        const controller = new SpiralController(canvas, ctx, w, h, onComplete);
+        const controller = new SpiralController(canvas, ctx, w, h, onComplete, onNearEnd);
         controller.updateColors(colors.bg, colors.fgRgb);
         controllerRef.current = controller;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -372,7 +383,7 @@ function SpiralBackground({ onComplete }: { onComplete: () => void }) {
 // ── Phase 2: Flowing SVG lines (appear after spiral ends) ──
 // Inspired by the spiral's trail: lines flow with similar organic motion
 
-function FloatingPaths({ position }: { position: number }) {
+export function FloatingPaths({ position }: { position: number }) {
     const paths = useMemo(
         () =>
             Array.from({ length: 36 }, (_, i) => ({
@@ -440,10 +451,15 @@ export function BackgroundPaths({
 }: {
     children?: React.ReactNode;
 }) {
-    const [phase, setPhase] = useState<"spiral" | "lines">("spiral");
+    const [spiralDone, setSpiralDone] = useState(false);
+    const [linesVisible, setLinesVisible] = useState(false);
+
+    const handleSpiralNearEnd = useCallback(() => {
+        setLinesVisible(true);
+    }, []);
 
     const handleSpiralComplete = useCallback(() => {
-        setPhase("lines");
+        setSpiralDone(true);
     }, []);
 
     return (
@@ -452,16 +468,16 @@ export function BackgroundPaths({
                 {/* Phase 1: Spiral — plays once then fades out */}
                 <div
                     className={`absolute inset-0 transition-opacity duration-[2000ms] ease-out ${
-                        phase === "spiral" ? "opacity-100" : "opacity-0 pointer-events-none"
+                        spiralDone ? "opacity-0 pointer-events-none" : "opacity-100"
                     }`}
                 >
-                    <SpiralBackground onComplete={handleSpiralComplete} />
+                    <SpiralBackground onComplete={handleSpiralComplete} onNearEnd={handleSpiralNearEnd} />
                 </div>
 
-                {/* Phase 2: Flowing lines — fade in after spiral */}
+                {/* Phase 2: Flowing lines — starts fading in 1s before spiral ends */}
                 <div
                     className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in ${
-                        phase === "lines" ? "opacity-100" : "opacity-0"
+                        linesVisible ? "opacity-100" : "opacity-0"
                     }`}
                 >
                     <FloatingPaths position={1} />

@@ -4,7 +4,7 @@ import { JobCard } from "@/components/job-card";
 import type { JobListing } from "@/types";
 
 interface JobGridProps {
-  keywords: string;
+  keywords: string[];
   onOptimize: (job: JobListing) => void;
 }
 
@@ -78,20 +78,24 @@ const JOBS: JobListing[] = [
 ];
 
 export function JobGrid({ keywords, onOptimize }: JobGridProps) {
-  // Simple keyword matching for demo — real job always first
-  const lowerKeywords = keywords.toLowerCase();
   const scored = JOBS.map((job) => {
     const matchCount = job.keywords.filter((kw) =>
-      lowerKeywords.includes(kw.toLowerCase())
+      keywords.some(
+        (userKw) =>
+          kw.toLowerCase().includes(userKw.toLowerCase()) ||
+          userKw.toLowerCase().includes(kw.toLowerCase())
+      )
     ).length;
     return { job, score: job.isDemo ? matchCount : matchCount + 100 };
   });
   scored.sort((a, b) => b.score - a.score);
 
+  const keywordsDisplay = keywords.map((kw) => `"${kw}"`).join(", ");
+
   return (
     <div className="w-full">
       <p className="mb-6 font-mono text-xs text-muted-foreground">
-        {scored.length} jobs found for &ldquo;{keywords}&rdquo;
+        {scored.length} jobs found for {keywordsDisplay}
       </p>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {scored.map(({ job }) => (

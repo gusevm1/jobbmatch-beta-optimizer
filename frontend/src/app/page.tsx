@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { CVUpload } from "@/components/cv-upload";
-import { KeywordSearch } from "@/components/keyword-search";
+import { UploadKeywordsView } from "@/components/upload-keywords-view";
 import { JobGrid } from "@/components/job-grid";
 import { ComparisonView } from "@/components/comparison-view";
 import { ProcessingStatus } from "@/components/processing-status";
 import { BackgroundPaths } from "@/components/ui/background-paths";
+import { FloatingPaths } from "@/components/ui/background-paths";
 import { GlassButton } from "@/components/ui/glass-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandWordmark } from "@/components/ui/brand-wordmark";
@@ -16,14 +16,16 @@ import type { CVProcessResponse, ProcessingStage, JobListing } from "@/types";
 export default function Home() {
   const [stage, setStage] = useState<ProcessingStage>("idle");
   const [cvId, setCvId] = useState<string | null>(null);
-  const [keywords, setKeywords] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [result, setResult] = useState<CVProcessResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heroExited, setHeroExited] = useState(false);
+  const [linesExiting, setLinesExiting] = useState(false);
   const appSectionRef = useRef<HTMLDivElement>(null);
 
   const handleDiscover = () => {
     setHeroExited(true);
+    setTimeout(() => setLinesExiting(true), 5000);
     setTimeout(() => {
       appSectionRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 600);
@@ -32,13 +34,14 @@ export default function Home() {
   const handleReset = () => {
     setStage("idle");
     setCvId(null);
-    setKeywords("");
+    setKeywords([]);
     setResult(null);
     setError(null);
   };
 
   const handleBackToHero = () => {
     setHeroExited(false);
+    setLinesExiting(false);
     handleReset();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -68,21 +71,17 @@ export default function Home() {
         return "Working on it";
       case "jobs":
         return "Jobs for you";
-      case "uploaded":
-        return "What are you looking for?";
-      case "uploading":
-        return "Uploading...";
       default:
-        return "Upload your CV";
+        return "Get started";
     }
   })();
 
   const sectionSubtext = (() => {
     switch (stage) {
       case "idle":
-        return "Drop your PDF below and we'll find matching jobs";
+      case "uploading":
       case "uploaded":
-        return "Enter some keywords to find relevant positions";
+        return "Upload your CV and find matching positions";
       case "jobs":
         return "Pick a job to optimize your CV for";
       default:
@@ -92,6 +91,22 @@ export default function Home() {
 
   return (
     <div className={heroExited ? undefined : "h-screen overflow-hidden"}>
+      {/* Persistent floating lines — visible after hero exit, then slowly fades */}
+      <div
+        className={`fixed inset-0 z-0 pointer-events-none transition-opacity ${
+          heroExited && !linesExiting
+            ? "opacity-100 duration-300"
+            : heroExited && linesExiting
+              ? "opacity-0 duration-[2000ms]"
+              : "opacity-0 duration-0"
+        }`}
+      >
+        <div className="absolute -inset-x-0 top-[-10%] bottom-0">
+          <FloatingPaths position={1} />
+          <FloatingPaths position={-1} />
+        </div>
+      </div>
+
       {/* Navbar — always visible */}
       <header className="fixed top-0 left-0 z-50 w-full bg-background/80 backdrop-blur-sm border-b border-border/40">
         <nav className="flex items-center justify-between px-5 md:px-10 h-16">
@@ -160,10 +175,10 @@ export default function Home() {
         </BackgroundPaths>
       </div>
 
-      {/* App Section — Upload → Keywords → Jobs → Processing → Results */}
+      {/* App Section — Upload + Keywords → Jobs → Processing → Results */}
       <section
         ref={appSectionRef}
-        className={`min-h-screen bg-background px-5 md:px-10 pt-24 pb-16 transition-all duration-700 ease-out ${
+        className={`relative z-10 min-h-screen bg-background px-5 md:px-10 pt-24 pb-16 transition-all duration-700 ease-out ${
           heroExited
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-8 pointer-events-none"
@@ -188,9 +203,11 @@ export default function Home() {
             )}
           </div>
 
-          {/* Upload state */}
-          {stage === "idle" && (
-            <CVUpload
+          {/* Combined upload + keywords view */}
+          {(stage === "idle" || stage === "uploading" || stage === "uploaded") && (
+            <UploadKeywordsView
+              cvId={cvId}
+              isUploading={stage === "uploading"}
               onUploadStart={() => {
                 setError(null);
                 setStage("uploading");
@@ -199,24 +216,17 @@ export default function Home() {
                 setCvId(id);
                 setStage("uploaded");
               }}
+              onSearch={(kws) => {
+                setKeywords(kws);
+                setStage("jobs");
+              }}
               onError={(err) => {
                 setError(err);
                 setStage("error");
               }}
-            />
-          )}
-
-          {/* Uploading state */}
-          {stage === "uploading" && (
-            <ProcessingStatus stage={stage} />
-          )}
-
-          {/* Keywords state */}
-          {stage === "uploaded" && (
-            <KeywordSearch
-              onSearch={(kw) => {
-                setKeywords(kw);
-                setStage("jobs");
+              onResetUpload={() => {
+                setCvId(null);
+                setStage("idle");
               }}
             />
           )}

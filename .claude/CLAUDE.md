@@ -20,131 +20,32 @@ IMPORTANT: Do NOT skip tasks or work on tasks out of order unless a task explici
 
 ## PROJECT OVERVIEW
 
-**What:** A demo application where a user uploads their CV (PDF), the system converts it to LaTeX internally, optimizes the content for a predefined job description using Claude AI, compiles the optimized LaTeX back to PDF, and presents the original and optimized versions side-by-side.
+**What:** A demo application where a user uploads their CV (PDF), searches for jobs by keyword, picks a job to optimize for, and the system converts the CV to LaTeX internally, optimizes it for the chosen job using Claude AI, compiles back to PDF, and presents original and optimized versions side-by-side with green diff highlighting.
 
 **Key constraint:** LaTeX is NEVER exposed to the user. It is an internal intermediate representation only. The user sees only PDFs.
 
-**Demo flow:**
-1. User uploads CV as PDF
-2. Backend converts PDF → LaTeX (via Claude vision)
-3. Backend loads predefined job description (JSON file in repo)
-4. Backend sends LaTeX + job description to Claude → gets optimized LaTeX back
-5. Backend compiles optimized LaTeX → PDF
-6. Frontend shows original PDF and optimized PDF side-by-side with diff highlights
-7. User can download the optimized PDF
+**Current demo flow:**
+1. User lands on hero page → clicks "Discover JobbMatch"
+2. Uploads CV as PDF
+3. Enters keywords → clicks "Find Jobs"
+4. Sees a grid of job listings (1 real + 5 demo)
+5. Clicks "Optimize CV" on a job card
+6. Backend: PDF → LaTeX (Claude vision) → optimize (Claude) → compile → 3 PDFs
+7. Frontend shows original vs optimized PDF side-by-side with green diff highlights
+8. User can download the clean optimized PDF
 
 ---
 
-## ARCHITECTURE DECISIONS
+## ARCHITECTURE
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Backend framework | FastAPI (Python) | Async, auto OpenAPI docs, great for AI workloads |
-| Frontend framework | Next.js 14+ (App Router) | Modern React, good DX |
-| UI components | shadcn/ui + TailwindCSS | Beautiful defaults, customizable |
-| AI model (vision) | Claude Opus 4.6 (`claude-opus-4-6`) | Best vision + LaTeX generation quality |
-| AI model (optimization) | Claude Sonnet 4 (`claude-sonnet-4-20250514`) | Cost-effective for text rewriting |
-| PDF → LaTeX | Claude vision API | Send PDF pages as images, get LaTeX back |
-| LaTeX → PDF | TexLive (xelatex) in Docker | Full Unicode support, reliable |
-| Job description | JSON file in repo (`examples/sample-job.json`) | Simple, easy to swap for demo |
-| Storage | File-based (`data/` directory, gitignored) | No database needed for demo |
-| API communication | Frontend calls backend directly | Simple, no proxy layer needed |
-| Optimization scope | Minimal content rewrites only | Keep layout/structure unchanged, just tailor language |
-
----
-
-## REPOSITORY STRUCTURE
-
-```
-jobbmatch-beta-optimizer/
-├── .claude/
-│   ├── CLAUDE.md                         # This file
-│   └── skills/
-│       └── commit.md                     # /commit skill
-│
-├── backend/
-│   ├── src/
-│   │   ├── __init__.py
-│   │   ├── main.py                       # FastAPI app entry point
-│   │   ├── config.py                     # Settings (env vars, paths)
-│   │   ├── api/
-│   │   │   ├── __init__.py
-│   │   │   └── routes/
-│   │   │       ├── __init__.py
-│   │   │       ├── cv.py                 # POST /api/cv/upload + /api/cv/process
-│   │   │       └── health.py             # GET /api/health
-│   │   ├── services/
-│   │   │   ├── __init__.py
-│   │   │   ├── anthropic_client.py       # Anthropic SDK wrapper
-│   │   │   ├── pdf_parser.py             # PDF → images (for Claude vision)
-│   │   │   ├── latex_generator.py        # Images → LaTeX (via Claude)
-│   │   │   ├── cv_optimizer.py           # LaTeX + job → optimized LaTeX (via Claude)
-│   │   │   └── latex_compiler.py         # LaTeX → PDF (xelatex subprocess)
-│   │   └── models/
-│   │       ├── __init__.py
-│   │       ├── cv.py                     # Pydantic models for CV operations
-│   │       └── job.py                    # Pydantic models for job descriptions
-│   │
-│   ├── tests/
-│   │   ├── __init__.py
-│   │   ├── conftest.py
-│   │   └── test_services.py
-│   │
-│   ├── pyproject.toml
-│   ├── requirements.txt
-│   └── Dockerfile                        # Python + TexLive
-│
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx                # Root layout
-│   │   │   ├── page.tsx                  # Main page: upload + results
-│   │   │   └── globals.css
-│   │   ├── components/
-│   │   │   ├── ui/                       # shadcn components
-│   │   │   ├── cv-upload.tsx             # Drag-and-drop PDF upload
-│   │   │   ├── pdf-viewer.tsx            # PDF renderer component
-│   │   │   ├── comparison-view.tsx       # Side-by-side PDF comparison
-│   │   │   └── processing-status.tsx     # Loading/progress indicator
-│   │   ├── lib/
-│   │   │   ├── api-client.ts             # Backend API client
-│   │   │   └── utils.ts
-│   │   └── types/
-│   │       └── index.ts                  # Shared TypeScript types
-│   │
-│   ├── public/
-│   ├── package.json
-│   ├── tailwind.config.ts
-│   ├── tsconfig.json
-│   ├── next.config.js
-│   └── components.json                   # shadcn config
-│
-├── examples/
-│   └── sample-job.json                   # Predefined job description for demo
-│
-├── data/                                 # Runtime storage (gitignored)
-│   ├── uploads/                          # Uploaded original PDFs
-│   └── generated/                        # Generated LaTeX files and compiled PDFs
-│
-├── docker-compose.yml                    # Backend service
-├── .gitignore
-├── .env.example                          # ANTHROPIC_API_KEY=your-key-here
-└── README.md
-```
-
----
-
-## API ENDPOINTS
-
-| Method | Endpoint | Request | Response | Description |
-|--------|----------|---------|----------|-------------|
-| GET | `/api/health` | — | `{ status: "ok" }` | Health check |
-| POST | `/api/cv/upload` | `multipart/form-data` (file) | `{ id: uuid, filename: str }` | Upload PDF, store it |
-| POST | `/api/cv/process` | `{ id: uuid }` | `{ id, original_pdf_url, optimized_pdf_url, changes_summary }` | Full pipeline: PDF→LaTeX→optimize→compile |
-| GET | `/api/cv/{id}/original` | — | PDF file | Download original PDF |
-| GET | `/api/cv/{id}/optimized` | — | PDF file | Download optimized PDF |
-
-Note: The `/api/cv/process` endpoint runs the entire pipeline in one call (convert to LaTeX, optimize against predefined job, compile back to PDF). This keeps the frontend simple — just upload and wait for results.
+| Layer | Choice |
+|-------|--------|
+| Backend | FastAPI (Python 3.12), PyMuPDF, Anthropic SDK, pdflatex via TexLive |
+| Frontend | Next.js 16, TailwindCSS v4, shadcn/ui, react-pdf, framer-motion, next-themes |
+| Docker | python:3.12-slim + TexLive for backend |
+| AI models | Opus 4.6 (`claude-opus-4-6`) for both vision and optimization |
+| Storage | File-based (`data/` directory, gitignored) |
+| Fonts | Inter (body), JetBrains Mono (mono), Space Grotesk (brand) |
 
 ---
 
@@ -152,321 +53,187 @@ Note: The `/api/cv/process` endpoint runs the entire pipeline in one call (conve
 
 | Command | Description |
 |---------|-------------|
-| `cd backend && uvicorn src.main:app --reload --port 8000` | Run backend locally |
-| `cd frontend && npm run dev` | Run frontend (port 3000) |
-| `docker-compose up` | Run full stack via Docker |
-| `docker-compose up backend` | Run just the backend in Docker |
-| `cd backend && pytest` | Run backend tests |
-| `cd frontend && npm test` | Run frontend tests |
+| `cd frontend && npm run dev` | Frontend dev server (port 3000) |
+| `docker-compose up --build` | Full backend in Docker (port 8000) |
+| `docker-compose down && docker-compose up --build` | Rebuild backend |
 
 ---
 
-## CONVENTIONS
+## DESIGN SYSTEM (B&W + Glass)
 
-- **Backend:** Pydantic models for all request/response types. Type hints everywhere. Async endpoints.
-- **Frontend:** TypeScript strict mode. All API calls through `lib/api-client.ts`. No `any` types.
-- **API:** All endpoints prefixed with `/api/`. CORS enabled for `localhost:3000`.
-- **Commits:** Use `/commit` skill. Conventional commit format. Always push after commit.
-- **Environment:** Secrets in `.env` (never committed). Copy `.env.example` to `.env` for setup.
-- **Errors:** Return proper HTTP status codes. Frontend shows user-friendly error messages.
-
----
-
-## TODO — PHASE 1 (COMPLETE)
-
-Steps 1-8 are done. See git log for full history. Phase 1 delivered:
-- Backend: FastAPI + Docker/TexLive, PDF upload, Claude vision LaTeX generation, optimization, compilation
-- Frontend: Next.js 16, drag-drop upload, processing states, side-by-side PDF comparison
-- Bug fixes: model IDs, error logging, font sanitization, frontend error handling, fetch timeouts
+- **Palette:** Pure B&W. Light: `#ffffff` bg, `#0a0a0a` text. Dark: `#0a0a0a` bg, `#fafafa` text.
+- **Theme:** next-themes, `attribute="class"`, `defaultTheme="light"`, `enableSystem`
+- **Brand font:** Space Grotesk. "Jobb" (300 weight) + "Match" (700 weight). Hero: 4rem mobile / 8rem desktop.
+- **Glass button:** easemize/glass-button. oklch relative colors, `@property` conic gradient borders, 3D press, shine overlay. CSS manually in `globals.css`.
+- **Background:** Two-phase animation. Phase 1: GSAP canvas spiral (plays once, 15s). Lines start fading in 1s before spiral ends. Phase 2: framer-motion SVG FloatingPaths (36 paths/layer, 2 mirrored layers, individual speeds).
+- **Hero:** h-screen sticky, content at mt-[22vh], navbar always visible (fixed, glass blur).
 
 ---
 
-## TODO — PHASE 2: PROMPT ENGINEERING, DIFF HIGHLIGHTING, FRONTEND REWORK
+## COMPLETED PHASES
 
-Phase 2 focuses on three areas: (A) better LaTeX generation using example source code, (B) green diff highlighting in the optimized PDF, and (C) a polished frontend experience.
+### Phase 1 (Steps 1-8) `[x]`
+Backend: FastAPI + Docker/TexLive, PDF upload, Claude vision LaTeX generation, optimization, compilation. Frontend: Next.js 16, drag-drop upload, processing states, side-by-side PDF comparison. Bug fixes: model IDs, error logging, font sanitization, frontend error handling, fetch timeouts.
 
-### STEP 10: Improve LaTeX Generation Prompt with Example Template `[x]`
-**Scope:** Instead of letting Claude invent LaTeX from scratch, provide the actual CV LaTeX template as a reference so the output matches the original formatting perfectly.
+### Phase 2 (Steps 10-12) `[x]`
+Template LaTeX (`examples/cv-template.tex`), pdflatex compiler, green diff highlighting (3 PDF outputs: original, clean optimized, highlighted), frontend wiring for highlighted PDF.
 
-**Context:** The user has actual LaTeX source code for the CV at `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex`. This is a well-structured template using custom commands (`\resumeSubheading`, `\resumeItem`, etc.) that compiles cleanly with pdflatex. We should use this as the basis.
+### Phase 3 — Landing Page (Step 20) `[x]`
+Complete frontend redesign: B&W palette with light/dark mode, Space Grotesk brand font (large hero wordmark), animated background (GSAP spiral → SVG floating lines with crossfade), glass button component, persistent navbar with glass blur, theme toggle (resolvedTheme fix), fade-in animations, new user flow (upload → keywords → job grid → optimize → results), job grid with 6 listings (1 real H&M + 5 demo), expandable job cards, processing screen with glass ring + orbiting dots, comparison view with react-markdown changes summary.
 
-**Key insight:** Instead of vision-to-LaTeX (which often produces broken/different LaTeX), we should:
-1. Send the CV images to Claude along with the **reference LaTeX template**
-2. Ask Claude to fill in the template structure with the content it sees in the images
-3. This ensures the output LaTeX compiles reliably and matches the original layout
+---
+
+## TODO — PHASE 4: CV UPLOAD PAGE REHAUL
+
+The landing page is done and looking good. Now we need to polish the CV upload experience — the page users see after clicking "Discover JobbMatch". This covers everything from the upload drop zone through the keyword search to the job grid.
+
+### STEP 30: Upload Page Layout & Visual Polish `[x]` (merged with Step 31)
+**Scope:** The upload page currently has a functional but plain drop zone. Rework the layout, spacing, and visual treatment to match the landing page's quality level.
 
 **Actions:**
-1. Copy the template to `examples/cv-template.tex` (sanitized, with placeholder content)
-2. Update `backend/src/services/anthropic_client.py` — `generate_latex_from_images()`:
-   - Load the template from `examples/cv-template.tex`
-   - New prompt strategy: "Here is a LaTeX CV template. Here are images of a CV. Reproduce the CV content using this exact LaTeX template structure. Keep all the custom commands and preamble identical. Only change the content within \\begin{document}...\\end{document}."
-   - This drastically improves compilation reliability
-3. Update `latex_compiler.py` — switch from `xelatex` to `pdflatex` since the template uses standard LaTeX (no fontspec needed). Remove the font sanitizer if no longer needed.
-4. Test: upload the test CV PDF, verify the generated LaTeX matches the template structure
+1. Review the current `cv-upload.tsx` — the drop zone, file-selected state, and "Upload CV" button
+2. Improve the visual design:
+   - Consider adding a subtle glass/frosted effect to the drop zone (consistent with glass button aesthetic)
+   - Better visual hierarchy: the upload zone should feel inviting, not clinical
+   - Animate the transition from hero → upload section (currently just opacity fade)
+   - The section heading "Upload your CV" could be more engaging
+3. Add subtle micro-interactions:
+   - Drag-over state should feel more responsive
+   - File-selected state transition should be smooth
+   - Consider a subtle success animation when file is selected
+4. Ensure the page feels cohesive with the landing page above it
 5. Commit and push
 
-**Reference LaTeX template preamble (from IntroCV.Mall.Overleaf.tex):**
-```latex
-\documentclass[letterpaper,11pt]{article}
-\usepackage{latexsym}
-\usepackage[empty]{fullpage}
-\usepackage{titlesec}
-\usepackage{marvosym}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage{verbatim}
-\usepackage{enumitem}
-\usepackage[hidelinks]{hyperref}
-\usepackage{fancyhdr}
-\usepackage[english]{babel}
-\usepackage{tabularx}
-\input{glyphtounicode}
-% ... custom commands: \resumeSubheading, \resumeItem, etc.
-```
-
-**Important:** The template uses `pdflatex`-compatible packages (no fontspec/xelatex needed). This simplifies compilation.
-
-**Verification:** Generated LaTeX compiles on first try. Output PDF closely matches the original CV layout.
+**Verification:** Upload page feels polished and matches the landing page quality. Smooth transitions, good visual hierarchy.
 
 ---
 
-### STEP 11: Add Diff Highlighting (Green Text) in Optimized PDF `[x]`
-**Scope:** When the optimizer changes text, mark the changes with green bold text in a "highlighted" version of the PDF. The downloadable version should be clean (no highlighting).
-
-**Approach:** The backend compiles THREE versions of the LaTeX:
-1. `{id}_original.pdf` — original CV faithfully reproduced
-2. `{id}_optimized.pdf` — clean optimized version (for download)
-3. `{id}_highlighted.pdf` — optimized version with changes marked in **green bold** (for side-by-side comparison)
+### STEP 31: Keyword Search Polish `[x]` (merged into Step 30)
+**Scope:** The keyword input is functional but basic. Make it feel premium.
 
 **Actions:**
-1. Update `backend/src/services/anthropic_client.py` — `optimize_latex()`:
-   - Change the prompt to ask Claude to return TWO versions:
-     - A clean optimized LaTeX (for the downloadable PDF)
-     - A highlighted LaTeX where changed/added text is wrapped in `\textcolor{green}{\textbf{...}}`
-   - Use format: `---CLEAN_LATEX---`, `---HIGHLIGHTED_LATEX---`, `---SUMMARY---`
-   - Requires adding `\usepackage{xcolor}` to the highlighted version's preamble
-2. Update `backend/src/services/cv_optimizer.py` — return 3 values: `(clean_latex, highlighted_latex, summary)`
-3. Update `backend/src/models/cv.py` — `CVProcessResponse` now includes `highlighted_pdf_url`
-4. Update `backend/src/api/routes/cv.py`:
-   - Compile all three PDFs: original, clean optimized, highlighted optimized
-   - Add `GET /api/cv/{id}/highlighted` endpoint
-   - Return `highlighted_pdf_url` in the process response
-5. Commit and push
-
-**Verification:** The highlighted PDF shows green bold text where changes were made. The clean optimized PDF has no color markup. Both compile successfully.
-
----
-
-### STEP 12: Quick Frontend Wiring `[x]`
-**Completed:** Added `highlighted_pdf_url` to types, API client, and comparison view. Right panel now shows highlighted PDF, download gives clean PDF. Original PDF now serves the actual uploaded file.
-
----
-
-## TODO — PHASE 3: FRONTEND REDESIGN (Digilab-inspired)
-
-Phase 3 is a complete frontend redesign inspired by [digilab.co](https://digilab.co/). The goal is a polished, professional landing page that flows into the CV optimization demo.
-
-**Design reference:** `examples/digilab-reference-styles.css` contains the full CSS tokens, color palette, typography, and grid system extracted from digilab.co.
-
-**Key design language from digilab.co:**
-- Warm cream background (`#f2eee5`), dark purple text (`#160e20`)
-- Clean sans-serif typography (we'll use Inter) with tight letter-spacing (`-0.03em`) on headings
-- Large hero text (5rem+ on desktop), scaling down on mobile
-- Accent colors: orange (`#fe4f32`), green (`#29a176`), light purple (`#cda6ff`)
-- Generous whitespace, minimal UI chrome
-- Smooth scroll animations (GSAP-style)
-- Monospace accents for secondary text (JetBrains Mono or similar)
-- Fluid responsive grid with viewport-relative sizing
-
-### STEP 20: Landing Page / Hero Section `[x]`
-**Scope:** Rebuild the entire page layout from scratch with a digilab-inspired hero section. This is the foundation — all other steps build on it.
-
-**NOT parallelizable — must be completed first.**
-
-**Actions:**
-1. **Install fonts:** Add Inter (sans-serif) and JetBrains Mono (monospace) via `next/font/google`
-2. **Update `globals.css`:**
-   - Replace the current Tailwind theme with digilab-inspired design tokens
-   - Set CSS variables: `--color-dark-purple`, `--color-dark-cream-bg`, `--color-orange`, `--color-green`, `--color-light-purple`, etc.
-   - Base styles: cream background, dark purple text, `-webkit-font-smoothing: antialiased`
-   - Typography scale: hero headings at `5.3rem` desktop / `2.2rem` mobile, tight line-height (`1.1`), negative letter-spacing
-3. **Rebuild `layout.tsx`:**
-   - Apply the new fonts (Inter as `font-sans`, JetBrains Mono as `font-mono`)
-   - Minimal header/nav bar with "JobbMatch" logo text (monospace, small)
-4. **Rebuild `page.tsx` — Hero section:**
-   - Large centered headline: "AI-Optimized CVs" or similar (styled like digilab's `md:text-85`)
-   - Subtitle in smaller text explaining the service
-   - Single prominent CTA button: "Upload Your CV" (orange accent `#fe4f32`, rounded, hover animation)
-   - Clicking the CTA transitions to the upload flow (Step 21)
-   - Smooth fade/scale entrance animation (CSS transitions or framer-motion)
-   - Generous vertical padding, centered layout
-5. **Remove old shadcn card-based layout** — replace with the new clean aesthetic
-6. Commit and push
-
-**Key styling patterns:**
-```css
-/* Hero heading */
-font-size: 2.2rem;  /* mobile */
-font-size: 5.3rem;  /* desktop (md:) */
-line-height: 1.1;
-letter-spacing: -0.03em;
-font-weight: 500;
-
-/* CTA button */
-background: #fe4f32;
-color: white;
-border-radius: 9999px;  /* pill shape */
-padding: 1rem 2.5rem;
-font-weight: 500;
-transition: transform 0.2s, background 0.2s;
-
-/* Page background */
-background: #f2eee5;
-color: #160e20;
-```
-
-**Verification:** Page loads with cream background, large hero text, and orange CTA button. Responsive on mobile. Clicking CTA triggers upload flow.
-
----
-
-### STEP 21: Upload Flow `[ ]`
-**Scope:** After clicking the hero CTA, transition into the CV upload experience. Replaces the current `cv-upload.tsx`.
-
-**Can be developed in parallel with Steps 22 and 23** (they share the same page flow but are independent UI sections).
-
-**Actions:**
-1. **Redesign `cv-upload.tsx`:**
-   - Full-width section that appears below or replaces the hero
-   - Large drag-and-drop zone with dashed border (using `--color-grey-stroke: #cbcbcb`)
-   - Upload icon (simple SVG, no heavy icon library)
-   - Text: "Drag & drop your CV here" + "or click to browse" in small/muted text (`--color-small-txt: #605a67`)
-   - File name display after selection
-   - "Optimize" button (orange, pill-shaped) appears after file is selected
-   - Smooth transition/animation when entering this section
-2. **Redesign `processing-status.tsx`:**
-   - Minimal, elegant loading state
-   - Pulsing dot or thin progress bar (not a spinner)
-   - Status text in monospace font: "Analyzing CV..." → "Optimizing for role..." → "Compiling PDF..."
-   - Appears in the same section, replacing the upload zone
-3. Commit and push
-
-**Verification:** Upload zone looks clean, matches digilab aesthetic. Processing shows elegant animation. Smooth transitions between states.
-
----
-
-### STEP 22: Job Description Display `[ ]`
-**Scope:** Show the target job description so the user knows what they're optimizing for. Currently the job is hardcoded — display it prominently.
-
-**Can be developed in parallel with Steps 21 and 23.**
-
-**Actions:**
-1. **Create `frontend/src/components/job-card.tsx`:**
-   - Reads from the process response or displays known job info
-   - Card with light cream background (`--color-light-cream-bg: #f8f8f0`), subtle border
-   - Shows: Job title, company name, key requirements (extracted from `examples/sample-job.json`)
-   - Small label: "Optimizing for this role" in monospace, muted text
-   - Positioned between the upload zone and the results section
-2. **Load job data:**
-   - Either hardcode the display info for the demo, or add a lightweight `/api/job` endpoint that returns the sample job metadata (title, company, key skills)
-   - Keep it simple — this is a display-only component for now
-3. Commit and push
-
-**Verification:** Job card appears after upload, clearly shows what job the CV is being optimized for.
-
----
-
-### STEP 23: Results Showcase `[ ]`
-**Scope:** Redesign the comparison/results view to match the new aesthetic. This is the final output section.
-
-**Can be developed in parallel with Steps 21 and 22.**
-
-**Actions:**
-1. **Redesign `comparison-view.tsx`:**
-   - Section heading: "Your Optimized CV" in large text
-   - Two PDF panels side-by-side on desktop, stacked on mobile
-   - Left: "Original" label (monospace, small) + PDF viewer
-   - Right: "Optimized" label + "(changes highlighted in green)" subtext + PDF viewer
-   - Clean card-style containers with subtle shadow or border
-   - Changes summary in a collapsible section or below the PDFs
-2. **Download section:**
-   - Prominent download button (orange pill): "Download Clean CV"
-   - Secondary button (outline, dark purple): "Start Over"
-   - Small text explaining: "The downloaded version has no highlighting"
-3. **Polish:**
-   - Smooth scroll-into-view animation when results appear
-   - Consistent spacing with the rest of the page
+1. Review `keyword-search.tsx` — currently a plain `<input>` with a GlassButton
+2. Improvements to consider:
+   - Glass/frosted input field styling (matching the overall aesthetic)
+   - Suggested keyword chips/tags (pulled from the job listings' keywords)
+   - Smooth transition from upload → keyword search
+   - Better placeholder text or animated placeholder
+   - Visual feedback when typing (subtle border glow or similar)
+3. Make the "Find Jobs" button feel like a natural next step
 4. Commit and push
 
-**Verification:** Results look polished, PDFs render correctly, download works, responsive layout.
+**Verification:** Keyword search feels premium, has good visual feedback, smooth transition from upload state.
 
 ---
 
-### STEP 24: End-to-End Testing + Polish `[ ]`
-**Scope:** Full integration test of the redesigned frontend with the backend.
+### STEP 32: Job Grid & Card Polish `[ ]`
+**Scope:** The job grid and cards work but need visual refinement to match the design system.
 
 **Actions:**
-1. Full flow test: landing → upload → processing → results → download
+1. Review `job-grid.tsx` and `job-card.tsx`
+2. Improvements:
+   - Cards should have glass/frosted treatment or subtle depth
+   - Hover effects on cards (lift, glow, or border change)
+   - Better visual distinction between the real job and demo jobs
+   - Keyword chips should look more refined
+   - "Optimize CV" and "View Posting" buttons should have clear visual hierarchy
+   - Expand/collapse animation should be smooth (consider framer-motion)
+   - Grid should have a nice entrance animation (staggered card appearance)
+3. Responsive: ensure cards stack nicely on mobile
+4. Commit and push
+
+**Verification:** Job grid looks polished, cards have good hover states, smooth animations, responsive.
+
+---
+
+### STEP 33: Processing & Results Flow Polish `[ ]`
+**Scope:** Review the full flow from clicking "Optimize CV" through to seeing results. Ensure transitions are smooth and the processing/results screens match the new quality bar.
+
+**Actions:**
+1. Review `processing-status.tsx` — glass ring, orbiting dots, timer
+2. Review `comparison-view.tsx` — PDF panels, changes summary, download
+3. Ensure smooth transitions between stages (jobs → processing → results)
+4. Check that the container width transition (max-w-2xl → max-w-6xl) feels smooth
+5. Verify PDF viewers load correctly
+6. Test the full flow end-to-end with the backend running
+7. Commit and push
+
+**Verification:** Full flow from job selection to results is smooth and polished.
+
+---
+
+### STEP 34: End-to-End Testing `[ ]`
+**Scope:** Full integration test of the complete flow with the backend.
+
+**Actions:**
+1. Full flow test: landing → upload → keywords → jobs → optimize → processing → results → download
 2. Test responsive behavior (mobile, tablet, desktop)
-3. Verify all animations/transitions are smooth
-4. Docker rebuild: `docker-compose down && docker-compose up --build`
-5. Cross-browser check (Chrome, Safari, Firefox)
-6. Commit and push
+3. Test light mode and dark mode
+4. Docker rebuild and test: `docker-compose down && docker-compose up --build`
+5. Commit and push
 
 **Test CV:** `/Users/maximgusev/workspace/CV-stuff/Mathias_Gren_CV_Mall_med_Intro_att_Dela.pdf`
 **Job description:** `examples/sample-job.json`
 
-**Verification:** Full demo flows smoothly with the new design. Professional enough for a portfolio piece.
+**Verification:** Full demo flows smoothly. Professional enough for a portfolio piece.
 
 ---
 
 ## REFERENCE FILES
 
-These files are available for development/testing:
-
 | File | Path | Purpose |
 |------|------|---------|
 | Test CV (PDF) | `/Users/maximgusev/workspace/CV-stuff/Mathias_Gren_CV_Mall_med_Intro_att_Dela.pdf` | Real CV for end-to-end testing |
-| LaTeX template source | `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex` | Reference LaTeX template — use as basis for prompt engineering |
+| LaTeX template | `examples/cv-template.tex` | Reference LaTeX template for Claude vision |
 | Job description | `examples/sample-job.json` | H&M Data Engineering Summer Internship |
-| Digilab CSS reference | `examples/digilab-reference-styles.css` | Design tokens, colors, typography from digilab.co |
+| Design reference | `examples/digilab-reference-styles.css` | Original design tokens from digilab.co |
+
+---
+
+## KEY COMPONENTS
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| BackgroundPaths | `frontend/src/components/ui/background-paths.tsx` | Two-phase animated background (spiral → lines) |
+| GlassButton | `frontend/src/components/ui/glass-button.tsx` | Glass-effect button (CSS in globals.css) |
+| BrandWordmark | `frontend/src/components/ui/brand-wordmark.tsx` | "JobbMatch" brand text (Space Grotesk) |
+| CVUpload | `frontend/src/components/cv-upload.tsx` | Drag-drop PDF upload zone |
+| KeywordSearch | `frontend/src/components/keyword-search.tsx` | Keyword input + Find Jobs button |
+| JobGrid | `frontend/src/components/job-grid.tsx` | Grid of job listings |
+| JobCard | `frontend/src/components/job-card.tsx` | Expandable job card with actions |
+| ProcessingStatus | `frontend/src/components/processing-status.tsx` | Glass ring loading animation |
+| ComparisonView | `frontend/src/components/comparison-view.tsx` | Side-by-side PDF comparison + download |
+| ThemeToggle | `frontend/src/components/theme-toggle.tsx` | Light/dark mode toggle |
 
 ---
 
 ## LESSONS LEARNED
 
-_This section is updated by Claude instances as they complete tasks._
+### Phase 1
+- PyMuPDF: pip package is `PyMuPDF`, import is `fitz`
+- Correct model IDs: `claude-opus-4-6` (NO date suffix), `claude-sonnet-4-20250514`
+- Reference LaTeX template uses pdflatex (no fontspec) — much more reliable in Docker
+- `examples/` dir must be mounted as Docker volume (outside backend build context)
+- Frontend needs JSON error body parsing + 5-min fetch timeout for process endpoint
 
-### 2026-02-08 — Phase 1
-- PyMuPDF installs as `PyMuPDF` but imports as `fitz`
-- TexLive Docker install uses `--no-install-recommends` to keep image size reasonable
-- xelatex needs to run twice for proper cross-references
-- Claude vision API needs base64-encoded PNG images
-- Correct model IDs: `claude-opus-4-6` (no date suffix), `claude-sonnet-4-20250514`
-- Use structured response format (---LATEX--- / ---SUMMARY---) for reliable parsing
-- fontspec in Docker only has DejaVu fonts — add a font sanitizer or avoid fontspec entirely
-- The reference LaTeX template uses pdflatex (no fontspec) which is much more reliable in Docker
-- `examples/` dir must be mounted as a Docker volume (it's outside the backend build context)
-- Backend error logging middleware is essential for debugging in Docker
-- Frontend needs to parse JSON error body from backend, not just use `res.statusText`
-- Add generous fetch timeout (5 min) for the process endpoint — it calls Claude twice + compiles LaTeX
+### Phase 2
+- Structured response format (---CLEAN_LATEX--- / ---HIGHLIGHTED_LATEX--- / ---SUMMARY---) for reliable parsing
+- pdflatex more reliable than xelatex in Docker (no font issues)
 
-### 2026-02-08 — Phase 3 (Step 20)
-- Tailwind v4 `@theme inline`: custom color vars must be defined in `:root` as `--brand-*`, then referenced in `@theme inline` as `--color-*: var(--brand-*)`. Defining values directly in `@theme inline` doesn't expose them as CSS custom properties for use in regular CSS rules.
-- shadcn semantic tokens (--background, --foreground, etc.) set in `:root` get picked up by `@apply bg-background` in `@layer base`
-- Hero transition: CSS opacity/scale/translate with 700ms duration + setTimeout for scroll. No need for framer-motion.
-
-### 2026-02-08 — Phase 3 (Design Overhaul)
-- **Color palette:** Switched from digilab cream/purple to full B&W. Light mode: white bg `#ffffff`, near-black text `#0a0a0a`. Dark mode: `#0a0a0a` bg, `#fafafa` text. Neutral gray scale for muted/border/card.
-- **Dark mode:** `next-themes` with `attribute="class"`, `defaultTheme="dark"`, `enableSystem`. Tailwind v4 already has `@custom-variant dark (&:is(.dark *))` — just add `.dark` selector with overridden CSS vars. Add `suppressHydrationWarning` to `<html>`.
-- **Glass button (easemize/glass-button):** Installed via `npx shadcn@latest add https://21st.dev/r/easemize/glass-button`. The registry only ships the TSX component — CSS must be added manually to `globals.css`. The official CSS uses `oklch(from var(--foreground/--background) l c h / N%)` relative color syntax (CSS Color Level 5), `@property` for animatable conic gradient angles, `mask-composite: exclude` for borders, `mix-blend-mode: screen` for shine overlay, `transform-style: preserve-3d` + `rotateX(25deg)` for 3D press. Full CSS sourced from GitHub repos using the same component.
-- **Animated background paths (framer-motion):** `Math.random()` in render causes path despawning on re-render — wrap path data in `useMemo` with deterministic durations. Original `strokeOpacity` range `0.1 + i*0.03` goes up to 1.15 (fully opaque) — reduce to `0.1 + i*0.01` (max 0.45) so lines don't overpower text.
-- **Sticky hero:** Use `h-screen overflow-hidden` on outer wrapper when hero is active. When hero exits, hero div becomes `absolute inset-0` to leave document flow. Outer wrapper constraint removed so app section scrolls normally.
-- **Navbar always visible:** Fixed at top with `bg-background/80 backdrop-blur-sm border-b border-border/40`. Contains GlassButton nav items + GlassButton icon theme toggle.
+### Phase 3
+- Tailwind v4: shadcn tokens in `:root`, mapped in `@theme inline` as `--color-*: var(--token)`
+- Glass button CSS not bundled with shadcn registry — must be manually added to globals.css
+- `oklch(from var(--foreground) l c h / N%)` — CSS Color Level 5 relative colors for theme-adaptive glass effects
+- framer-motion `Math.random()` in render → path despawning on re-render. Use `useMemo` with seeded PRNG.
+- Sticky hero: `h-screen overflow-hidden` when active, `absolute inset-0` when exited to leave document flow
+- next-themes: use `resolvedTheme` (not `theme`) for toggle — `theme` can be `"system"` causing phantom clicks
+- Space Grotesk: excellent brand font at large display sizes, pairs well with Inter body text
+- GSAP spiral `onNearEnd` callback at `time >= 14/15` lets lines start fading in 1s before spiral ends for smooth crossfade
 
 ---
 
 ## CURRENT STATE
 
-**Last completed step:** Landing page redesign with B&W palette, animated background paths, glass buttons, dark/light mode, sticky hero, persistent navbar.
-**Currently working on:** Steps 21-23 (Upload flow, Job card, Results showcase — still need redesign to match new B&W glass aesthetic)
-**Last instance notes:** Full design overhaul complete. Palette switched to B&W with light/dark mode (next-themes). Animated SVG background paths via framer-motion (memoized, reduced opacity). Glass button component from 21st.dev/easemize with official CSS (3D press, conic gradient borders, shine overlay, oklch relative colors). Always-visible navbar with GlassButton items ("Find jobs", "Upload CV", "Create account") + GlassButton icon theme toggle. Hero is h-screen sticky (no scroll). Footer uses bg-foreground/text-background for inverted contrast. CVUpload, ProcessingStatus, ComparisonView still use old shadcn Card/Button — need restyling in Steps 21-23.
+**Last completed:** Phase 3 — Full landing page + new user flow (upload → keywords → jobs → optimize → results)
+**Next up:** Phase 4 — CV upload page visual polish
 **Known blockers:** None
