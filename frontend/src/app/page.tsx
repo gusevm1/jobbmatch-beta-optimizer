@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { UploadKeywordsView } from "@/components/upload-keywords-view";
 import { JobGrid } from "@/components/job-grid";
+import { JobDetailView } from "@/components/job-detail-view";
 import { ComparisonView } from "@/components/comparison-view";
 import { ProcessingStatus } from "@/components/processing-status";
 import { BackgroundPaths } from "@/components/ui/background-paths";
@@ -19,6 +20,7 @@ export default function Home() {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [result, setResult] = useState<CVProcessResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
   const [heroExited, setHeroExited] = useState(false);
   const appSectionRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +37,7 @@ export default function Home() {
     setKeywords([]);
     setResult(null);
     setError(null);
+    setSelectedJob(null);
   };
 
   const handleBackToHero = () => {
@@ -68,6 +71,8 @@ export default function Home() {
         return "Working on it";
       case "jobs":
         return "Jobs for you";
+      case "job-detail":
+        return null;
       default:
         return "Get started";
     }
@@ -238,22 +243,24 @@ export default function Home() {
       >
         <div
           className={`mx-auto transition-all duration-500 ${
-            stage === "done" || stage === "jobs"
+            stage === "done" || stage === "jobs" || stage === "job-detail"
               ? "max-w-6xl"
               : "max-w-2xl"
           }`}
         >
           {/* Section heading — changes based on stage */}
-          <div className="mb-12 text-center">
-            <h2 className="text-2xl md:text-4xl font-medium text-foreground tracking-tight">
-              {sectionHeading}
-            </h2>
-            {sectionSubtext && (
-              <p className="mt-3 text-sm text-muted-foreground">
-                {sectionSubtext}
-              </p>
-            )}
-          </div>
+          {sectionHeading && (
+            <div className="mb-12 text-center">
+              <h2 className="text-2xl md:text-4xl font-medium text-foreground tracking-tight">
+                {sectionHeading}
+              </h2>
+              {sectionSubtext && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {sectionSubtext}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Combined upload + keywords view */}
           {(stage === "idle" || stage === "uploading" || stage === "uploaded") && (
@@ -285,7 +292,25 @@ export default function Home() {
 
           {/* Jobs grid */}
           {stage === "jobs" && (
-            <JobGrid keywords={keywords} onOptimize={handleOptimize} />
+            <JobGrid
+              keywords={keywords}
+              onOptimize={handleOptimize}
+              onSelectJob={(job) => {
+                setSelectedJob(job);
+                setStage("job-detail");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          )}
+
+          {/* Job detail view */}
+          {stage === "job-detail" && selectedJob && (
+            <JobDetailView
+              job={selectedJob}
+              keywords={keywords}
+              onOptimize={handleOptimize}
+              onBack={() => setStage("jobs")}
+            />
           )}
 
           {/* Processing state */}

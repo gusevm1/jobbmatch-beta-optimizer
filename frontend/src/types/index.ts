@@ -11,6 +11,12 @@ export interface CVProcessResponse {
   changes_summary: string;
 }
 
+export interface JobDescriptionSection {
+  heading: string;
+  text?: string;
+  bullets?: string[];
+}
+
 export interface JobListing {
   id: string;
   title: string;
@@ -18,6 +24,7 @@ export interface JobListing {
   location: string;
   type: string;
   description: string;
+  fullDescription?: JobDescriptionSection[];
   keywords: string[];
   url?: string;
   isDemo?: boolean;
@@ -28,6 +35,7 @@ export type ProcessingStage =
   | "uploading"
   | "uploaded"
   | "jobs"
+  | "job-detail"
   | "processing"
   | "done"
   | "error";

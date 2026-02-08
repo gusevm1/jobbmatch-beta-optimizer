@@ -6,100 +6,72 @@ import type { JobListing } from "@/types";
 interface JobGridProps {
   keywords: string[];
   onOptimize: (job: JobListing) => void;
+  onSelectJob: (job: JobListing) => void;
 }
 
 const JOBS: JobListing[] = [
   {
     id: "hm-data-engineering",
-    title: "Summer Internship - Data Engineering",
-    company: "H&M Group",
+    title: "H&M Summer Internship - Data Engineering",
+    company: "H & M Hennes & Mauritz Gbc AB",
     location: "Stockholm, Sweden",
     type: "Full-time internship (11 weeks)",
     description:
-      "As a Data Engineering Intern at H&M, you will get the opportunity to spend 11 weeks learning about our business and different functions while getting real-life experience working on current projects. You will work next to the AI, Analytics, & Data Tech Center who will play a key role in developing your skills. This is your chance to launch a stellar career and help us transform the fashion world.",
+      "Curious about what it's like to see the world of Data Engineering at H&M? Are you eager to get hands-on experience and turn your theoretical knowledge into practical skills. If you are intrigued by how the world's largest fashion brand operates, then this opportunity is for you! Level up your learning journey and gain those essential skills that will benefit your future career.",
+    fullDescription: [
+      {
+        heading: "What you'll be doing",
+        bullets: [
+          "Work on real data engineering projects within H&M's AI, Analytics, & Data Tech Center",
+          "Build and maintain data pipelines using Python, SQL, and cloud technologies (GCP)",
+          "Collaborate with cross-functional teams on current business challenges",
+          "Participate in agile development processes and CI/CD workflows",
+          "Connect with interns from other programs to explore the versatility of the business",
+        ],
+      },
+      {
+        heading: "What we're looking for",
+        bullets: [
+          "Currently pursuing a degree in Computer Science, Data Engineering, or a related field",
+          "Experience with Python and SQL",
+          "Interest in cloud platforms (GCP preferred) and data infrastructure",
+          "Familiarity with version control (Git) and CI/CD practices",
+          "Strong problem-solving skills and a collaborative mindset",
+        ],
+      },
+      {
+        heading: "Benefits",
+        text: "This is a paid internship program, meaning you will work full-time and receive a market-based salary. Other H&M Group benefits will be shared later in the process. You don't have to live in Sweden already, we welcome applications from all parts of the world and offer relocation support if needed.",
+      },
+      {
+        heading: "Application & Timeline",
+        text: "The last day to apply is 31st January. Send us your application in English including a resume and proof of education. If successful, you will be invited to a one-day assessment center including a behavioral interview and a case & competence interview.",
+      },
+    ],
     keywords: ["data engineering", "Python", "GCP", "SQL", "CI/CD", "Java", "agile", "cloud"],
-    url: "https://career.hmgroup.com",
-  },
-  {
-    id: "demo-spotify-ml",
-    title: "Machine Learning Engineer Intern",
-    company: "Spotify",
-    location: "Stockholm, Sweden",
-    type: "Summer internship (10 weeks)",
-    description:
-      "Join Spotify's ML team to work on recommendation systems and audio features. You'll build and deploy models that impact millions of users, working with large-scale data pipelines and modern ML infrastructure.",
-    keywords: ["machine learning", "Python", "TensorFlow", "data pipelines", "recommendations", "cloud"],
-    isDemo: true,
-  },
-  {
-    id: "demo-klarna-backend",
-    title: "Backend Developer Intern",
-    company: "Klarna",
-    location: "Stockholm, Sweden",
-    type: "Summer internship (12 weeks)",
-    description:
-      "Work on Klarna's core payment platform, building high-throughput microservices that process millions of transactions. You'll gain experience with event-driven architecture, distributed systems, and fintech engineering.",
-    keywords: ["Java", "microservices", "cloud", "API design", "event-driven", "fintech"],
-    isDemo: true,
-  },
-  {
-    id: "demo-ericsson-cloud",
-    title: "Cloud Infrastructure Intern",
-    company: "Ericsson",
-    location: "Kista, Sweden",
-    type: "Full-time internship (10 weeks)",
-    description:
-      "Join Ericsson's cloud team to work on Kubernetes-based 5G infrastructure. You'll help automate deployment pipelines, monitor system performance, and contribute to next-generation telecom cloud platforms.",
-    keywords: ["Kubernetes", "cloud", "CI/CD", "Python", "5G", "infrastructure", "DevOps"],
-    isDemo: true,
-  },
-  {
-    id: "demo-king-data",
-    title: "Data Analyst Intern",
-    company: "King (Activision Blizzard)",
-    location: "Stockholm, Sweden",
-    type: "Summer internship (8 weeks)",
-    description:
-      "Analyze player behavior and game metrics for Candy Crush and other top titles. You'll build dashboards, run A/B test analyses, and present insights to product teams that shape the gaming experience for millions.",
-    keywords: ["SQL", "Python", "data analysis", "A/B testing", "dashboards", "gaming"],
-    isDemo: true,
-  },
-  {
-    id: "demo-volvo-ai",
-    title: "AI Research Intern - Autonomous Driving",
-    company: "Volvo Cars",
-    location: "Gothenburg, Sweden",
-    type: "Full-time internship (12 weeks)",
-    description:
-      "Work on perception and planning models for Volvo's autonomous driving platform. You'll research and implement computer vision algorithms, test in simulation environments, and contribute to safety-critical AI systems.",
-    keywords: ["computer vision", "Python", "deep learning", "autonomous driving", "PyTorch", "simulation"],
-    isDemo: true,
+    url: "https://jobs.smartrecruiters.com/HMGroup/744000101569691-h-m-summer-internship-data-engineering-",
   },
 ];
 
-export function JobGrid({ keywords, onOptimize }: JobGridProps) {
-  const scored = JOBS.map((job) => {
-    const matchCount = job.keywords.filter((kw) =>
-      keywords.some(
-        (userKw) =>
-          kw.toLowerCase().includes(userKw.toLowerCase()) ||
-          userKw.toLowerCase().includes(kw.toLowerCase())
-      )
-    ).length;
-    return { job, score: job.isDemo ? matchCount : matchCount + 100 };
-  });
-  scored.sort((a, b) => b.score - a.score);
+export { JOBS };
 
+export function JobGrid({ keywords, onOptimize, onSelectJob }: JobGridProps) {
   const keywordsDisplay = keywords.map((kw) => `"${kw}"`).join(", ");
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-2xl mx-auto">
       <p className="mb-6 font-mono text-xs text-muted-foreground">
-        {scored.length} jobs found for {keywordsDisplay}
+        {JOBS.length} job found for {keywordsDisplay}
       </p>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {scored.map(({ job }) => (
-          <JobCard key={job.id} job={job} onOptimize={onOptimize} />
+      <div className="flex flex-col gap-4">
+        {JOBS.map((job) => (
+          <JobCard
+            key={job.id}
+            job={job}
+            keywords={keywords}
+            onOptimize={onOptimize}
+            onSelect={onSelectJob}
+          />
         ))}
       </div>
     </div>

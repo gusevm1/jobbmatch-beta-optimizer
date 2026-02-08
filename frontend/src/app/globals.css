@@ -178,6 +178,24 @@
   box-shadow: 0 0 0 3px oklch(from var(--foreground) l c h / 4%);
 }
 
+/* ── View Posting button — dark, plain, pill shape ── */
+.job-btn-view-posting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--foreground);
+  color: var(--background);
+  transition: all 200ms ease;
+  text-decoration: none;
+}
+.job-btn-view-posting:hover {
+  opacity: 0.85;
+}
+
 /* ── Glass button ── */
 @property --angle-1 {
   syntax: "<angle>";
