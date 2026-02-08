@@ -46,17 +46,19 @@ export interface GlassButtonProps
 }
 
 const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
-  ({ className, children, size, contentClassName, ...props }, ref) => {
+  ({ className, children, size, contentClassName, onClick, disabled, ...props }, ref) => {
     return (
       <div
         className={cn(
           "glass-button-wrap cursor-pointer rounded-full",
           className
         )}
+        onClick={disabled ? undefined : onClick as unknown as React.MouseEventHandler<HTMLDivElement>}
       >
         <button
           className={cn("glass-button", glassButtonVariants({ size }))}
           ref={ref}
+          disabled={disabled}
           {...props}
         >
           <span

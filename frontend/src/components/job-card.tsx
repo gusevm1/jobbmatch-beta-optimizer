@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { GlassButton } from "@/components/ui/glass-button";
 import type { JobListing } from "@/types";
 
@@ -16,7 +17,7 @@ function MatchScore({ job, keywords }: { job: JobListing; keywords: string[] }) 
 
   return (
     <div className="flex flex-col items-center gap-1.5 shrink-0">
-      <div className="relative w-16 h-16">
+      <motion.div layoutId={`match-score-${job.id}`} className="relative w-16 h-16">
         <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
           <circle
             cx="18" cy="18" r="15.5"
@@ -38,7 +39,7 @@ function MatchScore({ job, keywords }: { job: JobListing; keywords: string[] }) 
         <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-foreground">
           {score}%
         </span>
-      </div>
+      </motion.div>
       <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
     </div>
   );
@@ -46,21 +47,29 @@ function MatchScore({ job, keywords }: { job: JobListing; keywords: string[] }) 
 
 export function JobCard({ job, keywords, onOptimize, onSelect }: JobCardProps) {
   return (
-    <div
-      className="glass-workspace-panel w-full cursor-pointer transition-all duration-300 hover:border-foreground/12"
+    <motion.div
+      layoutId={`job-panel-${job.id}`}
+      className="glass-workspace-panel w-full cursor-pointer transition-colors duration-300 hover:border-foreground/12"
       onClick={() => onSelect(job)}
+      style={{ borderRadius: 20 }}
     >
       <div className="px-7 py-6 md:px-9 md:py-7">
         <div className="flex gap-6">
           {/* Left: content */}
           <div className="flex-1 min-w-0">
             {/* Title */}
-            <h3 className="text-lg md:text-xl font-semibold text-foreground leading-tight">
+            <motion.h3
+              layoutId={`job-title-${job.id}`}
+              className="text-lg md:text-xl font-semibold text-foreground leading-tight"
+            >
               {job.title}
-            </h3>
+            </motion.h3>
 
             {/* Meta row */}
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <motion.div
+              layoutId={`job-meta-${job.id}`}
+              className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground"
+            >
               <span className="flex items-center gap-1.5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                   <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
@@ -80,7 +89,7 @@ export function JobCard({ job, keywords, onOptimize, onSelect }: JobCardProps) {
                 </svg>
                 {job.location}
               </span>
-            </div>
+            </motion.div>
 
             {/* Description preview */}
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-2">
@@ -123,6 +132,6 @@ export function JobCard({ job, keywords, onOptimize, onSelect }: JobCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -11,13 +11,13 @@ interface JobDetailViewProps {
   onBack: () => void;
 }
 
-function MatchScore({ job, keywords }: { job: JobListing; keywords: string[] }) {
+function MatchScore({ job }: { job: JobListing }) {
   const score = 85;
   const label = "Great match";
 
   return (
     <div className="flex flex-col items-center gap-2 shrink-0">
-      <div className="relative w-20 h-20">
+      <motion.div layoutId={`match-score-${job.id}`} className="relative w-20 h-20">
         <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
           <circle
             cx="18" cy="18" r="15.5"
@@ -39,7 +39,7 @@ function MatchScore({ job, keywords }: { job: JobListing; keywords: string[] }) 
         <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-foreground">
           {score}%
         </span>
-      </div>
+      </motion.div>
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
     </div>
   );
@@ -47,33 +47,41 @@ function MatchScore({ job, keywords }: { job: JobListing; keywords: string[] }) 
 
 export function JobDetailView({ job, keywords, onOptimize, onBack }: JobDetailViewProps) {
   return (
-    <motion.div
-      className="w-full max-w-3xl mx-auto"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <div className="w-full max-w-3xl mx-auto">
       {/* Back button */}
-      <button
+      <motion.button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+        className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 cursor-pointer"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:-translate-x-0.5">
           <path d="m15 18-6-6 6-6"/>
         </svg>
         Back to jobs
-      </button>
+      </motion.button>
 
-      {/* Main card */}
-      <div className="glass-workspace-panel">
+      {/* Main card — shares layoutId with JobCard */}
+      <motion.div
+        layoutId={`job-panel-${job.id}`}
+        className="glass-workspace-panel"
+        style={{ borderRadius: 20 }}
+      >
         {/* Header */}
         <div className="px-7 py-7 md:px-9 md:py-8">
           <div className="flex gap-6 items-start">
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl md:text-2xl font-semibold text-foreground leading-tight">
+              <motion.h2
+                layoutId={`job-title-${job.id}`}
+                className="text-xl md:text-2xl font-semibold text-foreground leading-tight"
+              >
                 {job.title}
-              </h2>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+              </motion.h2>
+              <motion.div
+                layoutId={`job-meta-${job.id}`}
+                className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground"
+              >
                 <span className="flex items-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                     <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
@@ -100,17 +108,22 @@ export function JobDetailView({ job, keywords, onOptimize, onBack }: JobDetailVi
                   </svg>
                   {job.type}
                 </span>
-              </div>
+              </motion.div>
             </div>
 
             {/* Match score */}
             <div className="hidden sm:block">
-              <MatchScore job={job} keywords={keywords} />
+              <MatchScore job={job} />
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="mt-6 flex items-center gap-3">
+          <motion.div
+            className="mt-6 flex items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.25 }}
+          >
             {job.url && (
               <a href={job.url} target="_blank" rel="noopener noreferrer" className="job-btn-view-posting">
                 View Posting
@@ -122,17 +135,21 @@ export function JobDetailView({ job, keywords, onOptimize, onBack }: JobDetailVi
               </a>
             )}
             <GlassButton
-              size="default"
-              className="glass-button-signin"
+              size="sm"
               onClick={() => onOptimize(job)}
             >
               Optimize CV
             </GlassButton>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Full description */}
-        <div className="border-t border-foreground/6 px-7 py-7 md:px-9 md:py-8">
+        {/* Full description — fades in after panel expands */}
+        <motion.div
+          className="border-t border-foreground/6 px-7 py-7 md:px-9 md:py-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
           <div className="flex items-center gap-2 mb-5">
             <div className="w-1 h-5 rounded-full bg-foreground/70" />
             <h3 className="text-base font-semibold text-foreground">About the position</h3>
@@ -168,29 +185,8 @@ export function JobDetailView({ job, keywords, onOptimize, onBack }: JobDetailVi
               </span>
             ))}
           </div>
-
-          {/* Bottom actions */}
-          <div className="mt-8 flex items-center gap-3 pt-5 border-t border-foreground/6">
-            {job.url && (
-              <a href={job.url} target="_blank" rel="noopener noreferrer" className="job-btn-view-posting">
-                View Posting
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-              </a>
-            )}
-            <GlassButton
-              size="default"
-              className="glass-button-signin"
-              onClick={() => onOptimize(job)}
-            >
-              Optimize CV
-            </GlassButton>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+        </motion.div>
+      </motion.div>
+    </div>
   );
 }

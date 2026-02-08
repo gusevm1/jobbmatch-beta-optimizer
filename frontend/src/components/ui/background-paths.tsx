@@ -453,8 +453,9 @@ export function BackgroundPaths({
     const [spiralDone, setSpiralDone] = useState(false);
     const [linesVisible, setLinesVisible] = useState(false);
 
-    const handleSpiralNearEnd = useCallback(() => {
-        setLinesVisible(true);
+    useEffect(() => {
+        const t = requestAnimationFrame(() => setLinesVisible(true));
+        return () => cancelAnimationFrame(t);
     }, []);
 
     const handleSpiralComplete = useCallback(() => {
@@ -470,12 +471,12 @@ export function BackgroundPaths({
                         spiralDone ? "opacity-0 pointer-events-none" : "opacity-40"
                     }`}
                 >
-                    <SpiralBackground onComplete={handleSpiralComplete} onNearEnd={handleSpiralNearEnd} />
+                    <SpiralBackground onComplete={handleSpiralComplete} />
                 </div>
 
-                {/* Phase 2: Flowing lines — starts fading in 1s before spiral ends */}
+                {/* Phase 2: Flowing lines — gradual 12s fade-in from mount */}
                 <div
-                    className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in ${
+                    className={`absolute inset-0 transition-opacity duration-[12000ms] ease-in ${
                         linesVisible ? "opacity-100" : "opacity-0"
                     }`}
                 >

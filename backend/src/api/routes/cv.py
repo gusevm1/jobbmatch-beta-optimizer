@@ -65,15 +65,21 @@ async def process_cv(request: CVProcessRequest):
         logger.error(f"Failed to parse PDF: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to parse PDF: {e}")
 
-    # Step 2: Generate LaTeX from images via Claude
-    try:
-        original_latex = await generate_latex(images)
-    except Exception as e:
-        logger.error(f"Failed to generate LaTeX from PDF: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to generate LaTeX from PDF: {e}")
-
     generated_dir = settings.DATA_DIR / "generated" / cv_id
     generated_dir.mkdir(parents=True, exist_ok=True)
+    cached_latex_path = generated_dir / "original.tex"
+
+    # Step 2: Generate LaTeX from images via Claude (or use cached)
+    if cached_latex_path.exists():
+        logger.info(f"Using cached LaTeX for {cv_id}")
+        original_latex = cached_latex_path.read_text(encoding="utf-8")
+    else:
+        try:
+            original_latex = await generate_latex(images)
+            cached_latex_path.write_text(original_latex, encoding="utf-8")
+        except Exception as e:
+            logger.error(f"Failed to generate LaTeX from PDF: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Failed to generate LaTeX from PDF: {e}")
 
     # Step 3: Optimize LaTeX for job description
     try:
