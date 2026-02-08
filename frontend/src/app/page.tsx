@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { CVUpload } from "@/components/cv-upload";
+import { ComparisonView } from "@/components/comparison-view";
 import { ProcessingStatus } from "@/components/processing-status";
 import { Button } from "@/components/ui/button";
+import { getOriginalPdfUrl, getOptimizedPdfUrl } from "@/lib/api-client";
 import type { CVProcessResponse, ProcessingStage } from "@/types";
 
 export default function Home() {
@@ -53,20 +55,12 @@ export default function Home() {
         )}
 
         {stage === "done" && result && (
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-sm font-medium text-green-600">
-              Optimization complete!
-            </p>
-            <p className="max-w-md text-sm text-muted-foreground">
-              {result.changes_summary}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Comparison view coming soon...
-            </p>
-            <Button variant="outline" onClick={handleReset}>
-              Start Over
-            </Button>
-          </div>
+          <ComparisonView
+            originalUrl={getOriginalPdfUrl(result.id)}
+            optimizedUrl={getOptimizedPdfUrl(result.id)}
+            changesSummary={result.changes_summary}
+            onStartOver={handleReset}
+          />
         )}
 
         {stage === "error" && (
