@@ -4,7 +4,8 @@ import anthropic
 
 from src.config import settings
 
-MODEL = "claude-sonnet-4-20250514"
+VISION_MODEL = "claude-opus-4-6-20250609"  # Best for vision + LaTeX generation
+OPTIMIZATION_MODEL = "claude-sonnet-4-20250514"  # Cost-effective for text rewriting
 
 _client: anthropic.AsyncAnthropic | None = None
 
@@ -46,7 +47,7 @@ async def generate_latex_from_images(images: list[bytes]) -> str:
     })
 
     response = await client.messages.create(
-        model=MODEL,
+        model=VISION_MODEL,
         max_tokens=8192,
         messages=[{"role": "user", "content": content}],
     )
@@ -72,7 +73,7 @@ async def optimize_latex(latex: str, job_description: dict) -> tuple[str, str]:
     job_json = json.dumps(job_description, indent=2)
 
     response = await client.messages.create(
-        model=MODEL,
+        model=OPTIMIZATION_MODEL,
         max_tokens=8192,
         messages=[{
             "role": "user",
