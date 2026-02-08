@@ -4,7 +4,7 @@ import anthropic
 
 from src.config import settings
 
-VISION_MODEL = "claude-opus-4-6-20250609"  # Best for vision + LaTeX generation
+VISION_MODEL = "claude-opus-4-6"  # Best for vision + LaTeX generation
 OPTIMIZATION_MODEL = "claude-sonnet-4-20250514"  # Cost-effective for text rewriting
 
 _client: anthropic.AsyncAnthropic | None = None
