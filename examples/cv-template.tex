@@ -1,0 +1,174 @@
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+\usepackage{gensymb}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+% CV TEMPLATE - Replace placeholder content with actual CV data
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Huge \scshape [Full Name]} \\ \vspace{1pt}
+    \href{mailto: [email@example.com]}{\underline{[email@example.com]}} $|$
+    \small [Phone Number] $|$
+    \small [City, Country] $|$
+    \href{https://linkedin.com/in/[profile]} {\underline{linkedin.com/in/[Profile]}}
+\end{center}
+        \vspace{-10pt}
+
+\begin{center}
+\textbf{\small Professional Summary}\\[2pt]
+\begin{minipage}{0.9\textwidth}
+\small
+[Professional summary paragraph tailored to the role. Highlight key skills, experience, and career goals.]
+\end{minipage}
+\end{center}
+
+\vspace{-12pt}
+
+\section{Education}
+  \resumeSubHeadingListStart
+     \resumeSubheading
+      {[University Name]}{[City, Country]}
+      {[Degree Title and Specialization]}{[Start Date] - [End Date]}
+      \resumeItemListStart
+       \resumeItem{\textbf{GPA}: [X.XX/5.0]}
+       \resumeItem{\textbf{Organizations/Projects}: [List of organizations]}
+      \resumeItemListEnd
+
+     \resumeItemListStart
+       \resumeItem{\textbf{Relevant Coursework}: [List of relevant courses]}
+      \resumeItemListEnd
+                     \vspace{-10pt}
+    \resumeSubheading
+      {[University Name]}{[City, Country]}
+      {[Program Description]}{[Start Date] - [End Date]}
+
+  \resumeSubHeadingListEnd
+
+\section{Work Experience}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {[Company Name]}{[City, Country]}
+      {[Job Title]}{[Start Date] -- [End Date]}
+      \resumeItemListStart
+        \resumeItem{[Description of responsibility or achievement]}
+        \resumeItem{[Description of responsibility or achievement]}
+        \resumeItem{[Description of responsibility or achievement]}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {[Company Name]}{[City, Country]}
+      {[Job Title]}{[Start Date] -- [End Date]}
+      \resumeItemListStart
+        \resumeItem{[Description of responsibility or achievement]}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {[Company Name]}{[City, Country]}
+      {[Job Title]}{[Start Date] -- [End Date]}
+      \resumeItemListStart
+        \resumeItem{[Description of responsibility or achievement]}
+        \resumeItem{[Description of responsibility or achievement]}
+      \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+  \vspace{-5pt}
+
+\section{Projects and Achievements}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{[Achievement Title]}{: [Description]} \\
+     \textbf{[Achievement Title]}{: [Description]}
+    }}
+ \end{itemize}
+
+\section{Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Software}{: [List of software tools]} \\
+     \textbf{Spoken Languages}{: [List of languages with proficiency levels]}
+    }}
+ \end{itemize}
+
+\end{document}

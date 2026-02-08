@@ -75,45 +75,46 @@ async def process_cv(request: CVProcessRequest):
     generated_dir = settings.DATA_DIR / "generated" / cv_id
     generated_dir.mkdir(parents=True, exist_ok=True)
 
-    # Step 3: Compile original LaTeX to PDF
-    original_dir = generated_dir / "original"
+    # Step 3: Optimize LaTeX for job description
     try:
-        original_pdf = await compile_latex(original_latex, original_dir)
-        # Copy to expected location
-        final_original = generated_dir / f"{cv_id}_original.pdf"
-        shutil.copy2(original_pdf, final_original)
-    except RuntimeError as e:
-        logger.error(f"Failed to compile original LaTeX: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to compile original LaTeX: {e}")
-
-    # Step 4: Optimize LaTeX for job description
-    try:
-        optimized_latex, changes_summary = await optimize_cv(original_latex, job_description)
+        clean_latex, highlighted_latex, changes_summary = await optimize_cv(original_latex, job_description)
     except Exception as e:
         logger.error(f"Failed to optimize CV: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to optimize CV: {e}")
 
-    # Step 5: Compile optimized LaTeX to PDF
+    # Step 4: Compile clean optimized LaTeX to PDF (for download)
     optimized_dir = generated_dir / "optimized"
     try:
-        optimized_pdf = await compile_latex(optimized_latex, optimized_dir)
+        optimized_pdf = await compile_latex(clean_latex, optimized_dir)
         final_optimized = generated_dir / f"{cv_id}_optimized.pdf"
         shutil.copy2(optimized_pdf, final_optimized)
     except RuntimeError as e:
         logger.error(f"Failed to compile optimized LaTeX: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to compile optimized LaTeX: {e}")
 
+    # Step 5: Compile highlighted LaTeX to PDF (for side-by-side comparison)
+    highlighted_dir = generated_dir / "highlighted"
+    try:
+        highlighted_pdf = await compile_latex(highlighted_latex, highlighted_dir)
+        final_highlighted = generated_dir / f"{cv_id}_highlighted.pdf"
+        shutil.copy2(highlighted_pdf, final_highlighted)
+    except RuntimeError as e:
+        logger.error(f"Failed to compile highlighted LaTeX: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to compile highlighted LaTeX: {e}")
+
     return CVProcessResponse(
         id=cv_id,
         original_pdf_url=f"/api/cv/{cv_id}/original",
         optimized_pdf_url=f"/api/cv/{cv_id}/optimized",
+        highlighted_pdf_url=f"/api/cv/{cv_id}/highlighted",
         changes_summary=changes_summary,
     )
 
 
 @router.get("/api/cv/{cv_id}/original")
 async def get_original_pdf(cv_id: str):
-    pdf_path = settings.DATA_DIR / "generated" / cv_id / f"{cv_id}_original.pdf"
+    # Serve the actual uploaded PDF, not a reproduced version
+    pdf_path = settings.DATA_DIR / "uploads" / f"{cv_id}.pdf"
     if not pdf_path.exists():
         raise HTTPException(status_code=404, detail="Original PDF not found")
     return FileResponse(pdf_path, media_type="application/pdf", filename=f"{cv_id}_original.pdf")
@@ -125,3 +126,11 @@ async def get_optimized_pdf(cv_id: str):
     if not pdf_path.exists():
         raise HTTPException(status_code=404, detail="Optimized PDF not found")
     return FileResponse(pdf_path, media_type="application/pdf", filename=f"{cv_id}_optimized.pdf")
+
+
+@router.get("/api/cv/{cv_id}/highlighted")
+async def get_highlighted_pdf(cv_id: str):
+    pdf_path = settings.DATA_DIR / "generated" / cv_id / f"{cv_id}_highlighted.pdf"
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail="Highlighted PDF not found")
+    return FileResponse(pdf_path, media_type="application/pdf", filename=f"{cv_id}_highlighted.pdf")

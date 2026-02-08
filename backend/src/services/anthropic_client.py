@@ -1,11 +1,15 @@
 import base64
+from pathlib import Path
 
 import anthropic
 
 from src.config import settings
 
 VISION_MODEL = "claude-opus-4-6"  # Best for vision + LaTeX generation
-OPTIMIZATION_MODEL = "claude-sonnet-4-20250514"  # Cost-effective for text rewriting
+OPTIMIZATION_MODEL = "claude-opus-4-6"  # Using Opus for demo
+
+# Template path: in Docker it's /app/examples/, locally it's relative to project root
+TEMPLATE_PATH = Path("examples/cv-template.tex")
 
 _client: anthropic.AsyncAnthropic | None = None
 
@@ -17,9 +21,17 @@ def get_client() -> anthropic.AsyncAnthropic:
     return _client
 
 
+def _load_template() -> str:
+    """Load the CV LaTeX template from disk."""
+    if not TEMPLATE_PATH.exists():
+        raise FileNotFoundError(f"CV template not found at {TEMPLATE_PATH}")
+    return TEMPLATE_PATH.read_text(encoding="utf-8")
+
+
 async def generate_latex_from_images(images: list[bytes]) -> str:
-    """Send PDF page images to Claude and get LaTeX reproduction."""
+    """Send PDF page images to Claude along with a reference LaTeX template to get a faithful LaTeX reproduction."""
     client = get_client()
+    template = _load_template()
 
     content: list[dict] = []
     for img in images:
@@ -32,17 +44,20 @@ async def generate_latex_from_images(images: list[bytes]) -> str:
     content.append({
         "type": "text",
         "text": (
-            "Reproduce this CV exactly as a complete LaTeX document. "
-            "Requirements:\n"
-            "- Output ONLY the LaTeX code, no explanations or markdown fences\n"
-            "- Use \\documentclass{article} with standard packages\n"
-            "- Must compile with xelatex\n"
-            "- Faithfully reproduce the layout, formatting, sections, and all text content\n"
-            "- Use packages like geometry, enumitem, titlesec, hyperref as needed\n"
-            "- For fonts: use fontspec with ONLY DejaVu fonts (DejaVu Sans, DejaVu Serif, DejaVu Sans Mono) "
-            "or use the default Latin Modern fonts. Do NOT use any other font names.\n"
-            "- Ensure all special characters are properly escaped\n"
-            "- The document must be complete (\\begin{document} to \\end{document})"
+            "Here is a LaTeX CV template and images of a CV. Reproduce the CV content "
+            "using this exact LaTeX template structure.\n\n"
+            "=== LATEX TEMPLATE ===\n"
+            f"{template}\n"
+            "=== END TEMPLATE ===\n\n"
+            "Instructions:\n"
+            "- Keep the ENTIRE preamble (all \\usepackage lines, custom commands, formatting) EXACTLY as shown in the template. Do not add or remove any packages.\n"
+            "- Only replace the placeholder content within \\begin{document}...\\end{document} with the actual content from the CV images.\n"
+            "- Use the same custom commands (\\resumeSubheading, \\resumeItem, \\resumeSubHeadingListStart, etc.) exactly as defined in the template.\n"
+            "- Match the CV's sections, headings, dates, and bullet points faithfully from the images.\n"
+            "- Add or remove \\resumeSubheading and \\resumeItem entries as needed to match the actual CV content — the template placeholders are just examples of the structure.\n"
+            "- Preserve the same \\vspace adjustments and formatting patterns shown in the template.\n"
+            "- Ensure all special characters are properly escaped for LaTeX.\n"
+            "- Output ONLY the complete LaTeX document, no explanations or markdown fences."
         ),
     })
 
@@ -65,8 +80,25 @@ async def generate_latex_from_images(images: list[bytes]) -> str:
     return latex
 
 
-async def optimize_latex(latex: str, job_description: dict) -> tuple[str, str]:
-    """Optimize CV LaTeX to better match a job description. Returns (optimized_latex, changes_summary)."""
+def _strip_markdown_fences(text: str) -> str:
+    """Strip markdown code fences from a string if present."""
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:]  # Remove opening fence
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines)
+    return text
+
+
+async def optimize_latex(latex: str, job_description: dict) -> tuple[str, str, str]:
+    """Optimize CV LaTeX to better match a job description.
+
+    Returns (clean_latex, highlighted_latex, changes_summary).
+    - clean_latex: optimized version with no color markup (for download)
+    - highlighted_latex: optimized version with changes in green bold (for viewing)
+    - changes_summary: bullet-point summary of changes
+    """
     client = get_client()
 
     import json
@@ -74,19 +106,41 @@ async def optimize_latex(latex: str, job_description: dict) -> tuple[str, str]:
 
     response = await client.messages.create(
         model=OPTIMIZATION_MODEL,
-        max_tokens=8192,
+        max_tokens=16384,
         messages=[{
             "role": "user",
             "content": (
-                "You are a CV optimization expert. Make minimal, targeted changes to this CV's "
-                "content to better match the job description below. Keep the same LaTeX structure "
-                "and formatting. Only adjust wording, add relevant keywords, or slightly rephrase "
-                "bullet points. Do NOT change the layout or add/remove sections.\n\n"
+                "You are a CV optimization expert. Your goal: make SURGICAL, high-impact changes to "
+                "this CV so it better matches the job description. The output MUST stay the same length "
+                "or shorter — NEVER add content that would push the CV onto an extra page.\n\n"
+                "RULES:\n"
+                "1. REPLACE, don't add. Rewrite existing bullet points to weave in relevant keywords "
+                "from the job description. Do NOT add new bullet points or lines of text.\n"
+                "2. REMOVE low-relevance content if needed to make room for more impactful phrasing. "
+                "For example, if the job is about data engineering, a restaurant waiter role can be "
+                "shortened or its bullet points trimmed.\n"
+                "3. Focus rewrites where they have MAXIMUM impact: bullet points describing technical "
+                "experience, the professional summary, and the skills section.\n"
+                "4. Keep the same LaTeX structure, preamble, sections, and formatting. Do NOT add or "
+                "remove sections. Do NOT change \\vspace values or layout commands.\n"
+                "5. Preserve the candidate's authentic voice — rephrase, don't fabricate.\n"
+                "6. The total text content must fit within the SAME number of pages as the original.\n\n"
                 f"=== JOB DESCRIPTION ===\n{job_json}\n\n"
                 f"=== ORIGINAL CV LATEX ===\n{latex}\n\n"
-                "Respond in exactly this format:\n"
-                "---LATEX---\n"
-                "<the complete modified LaTeX document>\n"
+                "You must respond with TWO complete versions of the optimized LaTeX document plus a summary.\n\n"
+                "VERSION 1 (CLEAN): The complete optimized LaTeX document with no markup or highlighting. "
+                "Keep the preamble exactly as-is.\n\n"
+                "VERSION 2 (HIGHLIGHTED): The same optimized LaTeX document, but with ALL changed or added text "
+                "wrapped in \\textcolor{OliveGreen}{\\textbf{...}} so changes are visible in green bold. "
+                "In this version ONLY, replace the line \\usepackage[usenames,dvipsnames]{color} with "
+                "\\usepackage[usenames,dvipsnames]{xcolor} to enable \\textcolor. "
+                "Only wrap the actual changed WORDS or phrases, not entire bullet points unless the whole text changed. "
+                "Do not wrap LaTeX commands or structural elements — only the text content that changed.\n\n"
+                "Respond in EXACTLY this format:\n"
+                "---CLEAN_LATEX---\n"
+                "<complete clean optimized LaTeX document>\n"
+                "---HIGHLIGHTED_LATEX---\n"
+                "<complete highlighted optimized LaTeX document>\n"
                 "---SUMMARY---\n"
                 "<bullet-point summary of changes made>"
             ),
@@ -95,21 +149,27 @@ async def optimize_latex(latex: str, job_description: dict) -> tuple[str, str]:
 
     text = response.content[0].text
 
-    if "---LATEX---" in text and "---SUMMARY---" in text:
+    if "---CLEAN_LATEX---" in text and "---HIGHLIGHTED_LATEX---" in text and "---SUMMARY---" in text:
+        # Parse three sections
+        clean_and_rest = text.split("---HIGHLIGHTED_LATEX---")
+        clean_latex = clean_and_rest[0].replace("---CLEAN_LATEX---", "").strip()
+
+        highlighted_and_summary = clean_and_rest[1].split("---SUMMARY---")
+        highlighted_latex = highlighted_and_summary[0].strip()
+        summary = highlighted_and_summary[1].strip()
+    elif "---LATEX---" in text and "---SUMMARY---" in text:
+        # Fallback to old format (no highlighted version)
         parts = text.split("---SUMMARY---")
-        optimized = parts[0].replace("---LATEX---", "").strip()
+        clean_latex = parts[0].replace("---LATEX---", "").strip()
+        highlighted_latex = clean_latex  # No highlighting available
         summary = parts[1].strip()
     else:
-        # Fallback: treat entire response as LaTeX
-        optimized = text
+        # Last resort: treat entire response as LaTeX
+        clean_latex = text
+        highlighted_latex = text
         summary = "CV optimized for the target job description."
 
-    # Strip markdown fences from LaTeX if present
-    if optimized.startswith("```"):
-        lines = optimized.split("\n")
-        lines = lines[1:]
-        if lines and lines[-1].strip() == "```":
-            lines = lines[:-1]
-        optimized = "\n".join(lines)
+    clean_latex = _strip_markdown_fences(clean_latex)
+    highlighted_latex = _strip_markdown_fences(highlighted_latex)
 
-    return optimized, summary
+    return clean_latex, highlighted_latex, summary

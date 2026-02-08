@@ -5,10 +5,9 @@ import type { DocumentProps } from "react-pdf";
 
 interface PdfViewerProps {
   url: string;
-  label: string;
 }
 
-export function PdfViewer({ url, label }: PdfViewerProps) {
+export function PdfViewer({ url }: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [ReactPdf, setReactPdf] = useState<{
     Document: React.ComponentType<DocumentProps>;
@@ -28,11 +27,8 @@ export function PdfViewer({ url, label }: PdfViewerProps) {
 
   if (!ReactPdf) {
     return (
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold">{label}</h3>
-        <div className="flex h-64 items-center justify-center rounded-lg border bg-white text-sm text-muted-foreground">
-          Loading viewer...
-        </div>
+      <div className="flex h-64 items-center justify-center bg-white text-sm text-muted-foreground">
+        <span className="font-mono text-xs animate-pulse">Loading viewer...</span>
       </div>
     );
   }
@@ -40,33 +36,30 @@ export function PdfViewer({ url, label }: PdfViewerProps) {
   const { Document, Page } = ReactPdf;
 
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold">{label}</h3>
-      <div className="max-h-[70vh] overflow-y-auto rounded-lg border bg-white">
-        <Document
-          file={url}
-          onLoadSuccess={({ numPages: n }) => setNumPages(n)}
-          loading={
-            <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-              Loading PDF...
-            </div>
-          }
-          error={
-            <div className="flex h-64 items-center justify-center text-sm text-destructive">
-              Failed to load PDF
-            </div>
-          }
-        >
-          {Array.from({ length: numPages }, (_, i) => (
-            <Page
-              key={i + 1}
-              pageNumber={i + 1}
-              width={500}
-              className="mx-auto"
-            />
-          ))}
-        </Document>
-      </div>
+    <div className="max-h-[70vh] overflow-y-auto bg-white">
+      <Document
+        file={url}
+        onLoadSuccess={({ numPages: n }) => setNumPages(n)}
+        loading={
+          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+            <span className="font-mono text-xs animate-pulse">Loading PDF...</span>
+          </div>
+        }
+        error={
+          <div className="flex h-64 items-center justify-center text-sm text-destructive">
+            <span className="font-mono text-xs">Failed to load PDF</span>
+          </div>
+        }
+      >
+        {Array.from({ length: numPages }, (_, i) => (
+          <Page
+            key={i + 1}
+            pageNumber={i + 1}
+            width={500}
+            className="mx-auto"
+          />
+        ))}
+      </Document>
     </div>
   );
 }

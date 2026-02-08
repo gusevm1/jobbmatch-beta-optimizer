@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Digilab.co Reference Styles — captured from https://digilab.co/
+   Used as design reference for JobbMatch frontend redesign (Phase 3)
+   ========================================================================== */
+
+/* --- CSS Custom Properties / Design Tokens --- */
+:host, :root {
+    --color-blue-500: oklch(62.3% .214 259.815);
+    --color-gray-200: oklch(92.8% .006 264.531);
+    --color-gray-300: oklch(87.2% .01 258.338);
+    --color-gray-400: oklch(70.7% .022 261.325);
+    --color-gray-500: oklch(55.1% .027 264.364);
+    --color-gray-600: oklch(44.6% .03 256.802);
+    --color-gray-700: oklch(37.3% .034 259.733);
+    --color-gray-800: oklch(27.8% .033 256.848);
+    --color-neutral-50: oklch(98.5% 0 0);
+    --color-neutral-100: oklch(97% 0 0);
+    --color-black: #000;
+    --color-white: #fff;
+    --spacing: calc(1rem / 16);
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --tracking-tight: -.025em;
+    --tracking-wide: .025em;
+    --tracking-wider: .05em;
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --radius-xs: .125rem;
+    --radius-lg: .5rem;
+    --animate-spin: spin 1s linear infinite;
+    --default-transition-duration: .15s;
+    --default-transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+
+    /* Brand colors */
+    --color-dark-purple: #160e20;
+    --color-light-purple: #cda6ff;
+    --color-player-purple: #45355b;
+    --color-grey-stroke: #cbcbcb;
+    --color-dark-cream-bg: #f2eee5;
+    --color-light-cream-bg: #f8f8f0;
+    --color-orange: #fe4f32;
+    --color-green: #29a176;
+    --color-small-txt: #605a67;
+    --color-red: red;
+}
+
+/* --- Base Reset --- */
+*, ::backdrop, :after, :before {
+    box-sizing: border-box;
+    border: 0 solid;
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- HTML / Body --- */
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: contain;
+    --screen-width: 100vw;
+    --screen-height: 90vh;
+    --screen-height-max: 100vh;
+    --header-height: calc(94rem / 16);
+    --viewport-height: calc(var(--screen-height-max) - var(--header-height));
+
+    /* Mobile grid */
+    --grid-width: calc(94.6667vw - var(--sbw) * .94667);
+    --margin: calc(2.66667vw - var(--sbw) * .02667);
+    --gutter: calc(2.66667vw - var(--sbw) * .02667);
+    --column: calc(13.5556vw - var(--sbw) * .13556);
+    font-size: min(calc(4.26667vw - var(--sbw) * .04267), 20.267px);
+    --sbw: 0px;
+}
+
+@supports (height: 100svh) {
+    html {
+        --screen-height: 100svh;
+        --screen-height-max: 100lvh;
+    }
+}
+
+@media (min-width: 800px) {
+    html {
+        --grid-width: calc(97.2222vw - var(--sbw) * .97222);
+        --margin: calc(1.38889vw - var(--sbw) * .01389);
+        --gutter: calc(1.38889vw - var(--sbw) * .01389);
+        --column: calc(6.8287vw - var(--sbw) * .06829);
+        font-size: calc(1.11111vw - var(--sbw) * .01111);
+    }
+}
+
+:host, html {
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    line-height: 1.5;
+    font-family: var(--font-denim-ink), sans-serif;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body, html {
+    color: var(--color-dark-purple);
+    background-color: var(--color-dark-cream-bg);
+    overscroll-behavior: contain;
+}
+
+body {
+    overscroll-behavior: none;
+    white-space: pre-wrap;
+    overflow-y: scroll;
+}
+
+/* --- Typography --- */
+h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.font-sans {
+    font-family: var(--font-denim-ink), sans-serif;
+}
+
+.font-medium {
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-35 {
+    font-size: 2.1875rem;
+    line-height: var(--tw-leading, 1.1);
+    letter-spacing: var(--tw-tracking, -.03em);
+}
+
+.text-48 {
+    letter-spacing: var(--tw-tracking, -.03em);
+}
+
+@media (min-width: 800px) {
+    .md\:text-85 {
+        font-size: 5.3125rem;
+        line-height: var(--tw-leading, 1.1);
+        letter-spacing: var(--tw-tracking, -.03em);
+    }
+    .md\:text-48 {
+        letter-spacing: var(--tw-tracking, -.03em);
+    }
+}
+
+/* --- Selection --- */
+.selection\:text-dark-purple ::selection {
+    color: var(--color-dark-purple);
+}
+
+.selection\:bg-light-purple\/50 ::selection {
+    background-color: #cda6ff80;
+}
+
+@supports (color: color-mix(in lab, red, red)) {
+    .selection\:bg-light-purple\/50 ::selection {
+        background-color: color-mix(in oklab, var(--color-light-purple) 50%, transparent);
+    }
+}
+
+/* --- Font Faces (from Next.js) --- */
+/* Note: These are the original digilab fonts. For JobbMatch, substitute with:
+   - denimInk → Inter or similar clean sans-serif
+   - groteskMono → JetBrains Mono or similar monospace
+*/

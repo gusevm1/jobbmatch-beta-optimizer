@@ -185,7 +185,7 @@ Steps 1-8 are done. See git log for full history. Phase 1 delivered:
 
 Phase 2 focuses on three areas: (A) better LaTeX generation using example source code, (B) green diff highlighting in the optimized PDF, and (C) a polished frontend experience.
 
-### STEP 10: Improve LaTeX Generation Prompt with Example Template `[ ]`
+### STEP 10: Improve LaTeX Generation Prompt with Example Template `[x]`
 **Scope:** Instead of letting Claude invent LaTeX from scratch, provide the actual CV LaTeX template as a reference so the output matches the original formatting perfectly.
 
 **Context:** The user has actual LaTeX source code for the CV at `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex`. This is a well-structured template using custom commands (`\resumeSubheading`, `\resumeItem`, etc.) that compiles cleanly with pdflatex. We should use this as the basis.
@@ -229,7 +229,7 @@ Phase 2 focuses on three areas: (A) better LaTeX generation using example source
 
 ---
 
-### STEP 11: Add Diff Highlighting (Green Text) in Optimized PDF `[ ]`
+### STEP 11: Add Diff Highlighting (Green Text) in Optimized PDF `[x]`
 **Scope:** When the optimizer changes text, mark the changes with green bold text in a "highlighted" version of the PDF. The downloadable version should be clean (no highlighting).
 
 **Approach:** The backend compiles THREE versions of the LaTeX:
@@ -256,45 +256,165 @@ Phase 2 focuses on three areas: (A) better LaTeX generation using example source
 
 ---
 
-### STEP 12: Frontend Rework — Three-Panel Comparison `[ ]`
-**Scope:** Redesign the comparison view to show the highlighted version and provide a clean download.
-
-**Actions:**
-1. Update `frontend/src/types/index.ts` — add `highlighted_pdf_url` to `CVProcessResponse`
-2. Update `frontend/src/lib/api-client.ts` — add `getHighlightedPdfUrl(id)` helper
-3. Redesign `frontend/src/components/comparison-view.tsx`:
-   - Left panel: "Original CV" (original PDF)
-   - Right panel: "Optimized CV" (highlighted PDF — shows green changes)
-   - Below: changes summary text
-   - Download button downloads the **clean** optimized PDF (no green highlighting)
-   - "Start Over" button
-4. Improve overall page layout:
-   - Job description info shown (title, company) so user knows what they're optimizing for
-   - Better responsive design
-   - Nicer processing animation
-5. Commit and push
-
-**Verification:** Side-by-side shows original vs highlighted. Green text is visible in the right panel. Download gives clean PDF without green marks.
+### STEP 12: Quick Frontend Wiring `[x]`
+**Completed:** Added `highlighted_pdf_url` to types, API client, and comparison view. Right panel now shows highlighted PDF, download gives clean PDF. Original PDF now serves the actual uploaded file.
 
 ---
 
-### STEP 13: End-to-End Testing + Final Polish `[ ]`
-**Scope:** Full integration test with the real CV and H&M job description.
+## TODO — PHASE 3: FRONTEND REDESIGN (Digilab-inspired)
+
+Phase 3 is a complete frontend redesign inspired by [digilab.co](https://digilab.co/). The goal is a polished, professional landing page that flows into the CV optimization demo.
+
+**Design reference:** `examples/digilab-reference-styles.css` contains the full CSS tokens, color palette, typography, and grid system extracted from digilab.co.
+
+**Key design language from digilab.co:**
+- Warm cream background (`#f2eee5`), dark purple text (`#160e20`)
+- Clean sans-serif typography (we'll use Inter) with tight letter-spacing (`-0.03em`) on headings
+- Large hero text (5rem+ on desktop), scaling down on mobile
+- Accent colors: orange (`#fe4f32`), green (`#29a176`), light purple (`#cda6ff`)
+- Generous whitespace, minimal UI chrome
+- Smooth scroll animations (GSAP-style)
+- Monospace accents for secondary text (JetBrains Mono or similar)
+- Fluid responsive grid with viewport-relative sizing
+
+### STEP 20: Landing Page / Hero Section `[x]`
+**Scope:** Rebuild the entire page layout from scratch with a digilab-inspired hero section. This is the foundation — all other steps build on it.
+
+**NOT parallelizable — must be completed first.**
 
 **Actions:**
-1. Test full flow: upload Mathias's CV → get highlighted comparison → download clean PDF
-2. Verify the LaTeX template approach produces reliable, compilable output
-3. Verify green highlighting is clear and accurate
-4. Verify clean download has no color artifacts
-5. Docker rebuild and test: `docker-compose down && docker-compose up --build`
-6. Update README if needed
-7. Commit and push
+1. **Install fonts:** Add Inter (sans-serif) and JetBrains Mono (monospace) via `next/font/google`
+2. **Update `globals.css`:**
+   - Replace the current Tailwind theme with digilab-inspired design tokens
+   - Set CSS variables: `--color-dark-purple`, `--color-dark-cream-bg`, `--color-orange`, `--color-green`, `--color-light-purple`, etc.
+   - Base styles: cream background, dark purple text, `-webkit-font-smoothing: antialiased`
+   - Typography scale: hero headings at `5.3rem` desktop / `2.2rem` mobile, tight line-height (`1.1`), negative letter-spacing
+3. **Rebuild `layout.tsx`:**
+   - Apply the new fonts (Inter as `font-sans`, JetBrains Mono as `font-mono`)
+   - Minimal header/nav bar with "JobbMatch" logo text (monospace, small)
+4. **Rebuild `page.tsx` — Hero section:**
+   - Large centered headline: "AI-Optimized CVs" or similar (styled like digilab's `md:text-85`)
+   - Subtitle in smaller text explaining the service
+   - Single prominent CTA button: "Upload Your CV" (orange accent `#fe4f32`, rounded, hover animation)
+   - Clicking the CTA transitions to the upload flow (Step 21)
+   - Smooth fade/scale entrance animation (CSS transitions or framer-motion)
+   - Generous vertical padding, centered layout
+5. **Remove old shadcn card-based layout** — replace with the new clean aesthetic
+6. Commit and push
+
+**Key styling patterns:**
+```css
+/* Hero heading */
+font-size: 2.2rem;  /* mobile */
+font-size: 5.3rem;  /* desktop (md:) */
+line-height: 1.1;
+letter-spacing: -0.03em;
+font-weight: 500;
+
+/* CTA button */
+background: #fe4f32;
+color: white;
+border-radius: 9999px;  /* pill shape */
+padding: 1rem 2.5rem;
+font-weight: 500;
+transition: transform 0.2s, background 0.2s;
+
+/* Page background */
+background: #f2eee5;
+color: #160e20;
+```
+
+**Verification:** Page loads with cream background, large hero text, and orange CTA button. Responsive on mobile. Clicking CTA triggers upload flow.
+
+---
+
+### STEP 21: Upload Flow `[ ]`
+**Scope:** After clicking the hero CTA, transition into the CV upload experience. Replaces the current `cv-upload.tsx`.
+
+**Can be developed in parallel with Steps 22 and 23** (they share the same page flow but are independent UI sections).
+
+**Actions:**
+1. **Redesign `cv-upload.tsx`:**
+   - Full-width section that appears below or replaces the hero
+   - Large drag-and-drop zone with dashed border (using `--color-grey-stroke: #cbcbcb`)
+   - Upload icon (simple SVG, no heavy icon library)
+   - Text: "Drag & drop your CV here" + "or click to browse" in small/muted text (`--color-small-txt: #605a67`)
+   - File name display after selection
+   - "Optimize" button (orange, pill-shaped) appears after file is selected
+   - Smooth transition/animation when entering this section
+2. **Redesign `processing-status.tsx`:**
+   - Minimal, elegant loading state
+   - Pulsing dot or thin progress bar (not a spinner)
+   - Status text in monospace font: "Analyzing CV..." → "Optimizing for role..." → "Compiling PDF..."
+   - Appears in the same section, replacing the upload zone
+3. Commit and push
+
+**Verification:** Upload zone looks clean, matches digilab aesthetic. Processing shows elegant animation. Smooth transitions between states.
+
+---
+
+### STEP 22: Job Description Display `[ ]`
+**Scope:** Show the target job description so the user knows what they're optimizing for. Currently the job is hardcoded — display it prominently.
+
+**Can be developed in parallel with Steps 21 and 23.**
+
+**Actions:**
+1. **Create `frontend/src/components/job-card.tsx`:**
+   - Reads from the process response or displays known job info
+   - Card with light cream background (`--color-light-cream-bg: #f8f8f0`), subtle border
+   - Shows: Job title, company name, key requirements (extracted from `examples/sample-job.json`)
+   - Small label: "Optimizing for this role" in monospace, muted text
+   - Positioned between the upload zone and the results section
+2. **Load job data:**
+   - Either hardcode the display info for the demo, or add a lightweight `/api/job` endpoint that returns the sample job metadata (title, company, key skills)
+   - Keep it simple — this is a display-only component for now
+3. Commit and push
+
+**Verification:** Job card appears after upload, clearly shows what job the CV is being optimized for.
+
+---
+
+### STEP 23: Results Showcase `[ ]`
+**Scope:** Redesign the comparison/results view to match the new aesthetic. This is the final output section.
+
+**Can be developed in parallel with Steps 21 and 22.**
+
+**Actions:**
+1. **Redesign `comparison-view.tsx`:**
+   - Section heading: "Your Optimized CV" in large text
+   - Two PDF panels side-by-side on desktop, stacked on mobile
+   - Left: "Original" label (monospace, small) + PDF viewer
+   - Right: "Optimized" label + "(changes highlighted in green)" subtext + PDF viewer
+   - Clean card-style containers with subtle shadow or border
+   - Changes summary in a collapsible section or below the PDFs
+2. **Download section:**
+   - Prominent download button (orange pill): "Download Clean CV"
+   - Secondary button (outline, dark purple): "Start Over"
+   - Small text explaining: "The downloaded version has no highlighting"
+3. **Polish:**
+   - Smooth scroll-into-view animation when results appear
+   - Consistent spacing with the rest of the page
+4. Commit and push
+
+**Verification:** Results look polished, PDFs render correctly, download works, responsive layout.
+
+---
+
+### STEP 24: End-to-End Testing + Polish `[ ]`
+**Scope:** Full integration test of the redesigned frontend with the backend.
+
+**Actions:**
+1. Full flow test: landing → upload → processing → results → download
+2. Test responsive behavior (mobile, tablet, desktop)
+3. Verify all animations/transitions are smooth
+4. Docker rebuild: `docker-compose down && docker-compose up --build`
+5. Cross-browser check (Chrome, Safari, Firefox)
+6. Commit and push
 
 **Test CV:** `/Users/maximgusev/workspace/CV-stuff/Mathias_Gren_CV_Mall_med_Intro_att_Dela.pdf`
-**Test LaTeX source:** `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex`
-**Job description:** `examples/sample-job.json` (H&M Data Engineering Summer Internship)
+**Job description:** `examples/sample-job.json`
 
-**Verification:** Full demo works smoothly. Highlighted changes are readable. Download is clean.
+**Verification:** Full demo flows smoothly with the new design. Professional enough for a portfolio piece.
 
 ---
 
@@ -307,6 +427,7 @@ These files are available for development/testing:
 | Test CV (PDF) | `/Users/maximgusev/workspace/CV-stuff/Mathias_Gren_CV_Mall_med_Intro_att_Dela.pdf` | Real CV for end-to-end testing |
 | LaTeX template source | `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex` | Reference LaTeX template — use as basis for prompt engineering |
 | Job description | `examples/sample-job.json` | H&M Data Engineering Summer Internship |
+| Digilab CSS reference | `examples/digilab-reference-styles.css` | Design tokens, colors, typography from digilab.co |
 
 ---
 
@@ -328,11 +449,24 @@ _This section is updated by Claude instances as they complete tasks._
 - Frontend needs to parse JSON error body from backend, not just use `res.statusText`
 - Add generous fetch timeout (5 min) for the process endpoint — it calls Claude twice + compiles LaTeX
 
+### 2026-02-08 — Phase 3 (Step 20)
+- Tailwind v4 `@theme inline`: custom color vars must be defined in `:root` as `--brand-*`, then referenced in `@theme inline` as `--color-*: var(--brand-*)`. Defining values directly in `@theme inline` doesn't expose them as CSS custom properties for use in regular CSS rules.
+- shadcn semantic tokens (--background, --foreground, etc.) set in `:root` get picked up by `@apply bg-background` in `@layer base`
+- Hero transition: CSS opacity/scale/translate with 700ms duration + setTimeout for scroll. No need for framer-motion.
+
+### 2026-02-08 — Phase 3 (Design Overhaul)
+- **Color palette:** Switched from digilab cream/purple to full B&W. Light mode: white bg `#ffffff`, near-black text `#0a0a0a`. Dark mode: `#0a0a0a` bg, `#fafafa` text. Neutral gray scale for muted/border/card.
+- **Dark mode:** `next-themes` with `attribute="class"`, `defaultTheme="dark"`, `enableSystem`. Tailwind v4 already has `@custom-variant dark (&:is(.dark *))` — just add `.dark` selector with overridden CSS vars. Add `suppressHydrationWarning` to `<html>`.
+- **Glass button (easemize/glass-button):** Installed via `npx shadcn@latest add https://21st.dev/r/easemize/glass-button`. The registry only ships the TSX component — CSS must be added manually to `globals.css`. The official CSS uses `oklch(from var(--foreground/--background) l c h / N%)` relative color syntax (CSS Color Level 5), `@property` for animatable conic gradient angles, `mask-composite: exclude` for borders, `mix-blend-mode: screen` for shine overlay, `transform-style: preserve-3d` + `rotateX(25deg)` for 3D press. Full CSS sourced from GitHub repos using the same component.
+- **Animated background paths (framer-motion):** `Math.random()` in render causes path despawning on re-render — wrap path data in `useMemo` with deterministic durations. Original `strokeOpacity` range `0.1 + i*0.03` goes up to 1.15 (fully opaque) — reduce to `0.1 + i*0.01` (max 0.45) so lines don't overpower text.
+- **Sticky hero:** Use `h-screen overflow-hidden` on outer wrapper when hero is active. When hero exits, hero div becomes `absolute inset-0` to leave document flow. Outer wrapper constraint removed so app section scrolls normally.
+- **Navbar always visible:** Fixed at top with `bg-background/80 backdrop-blur-sm border-b border-border/40`. Contains GlassButton nav items + GlassButton icon theme toggle.
+
 ---
 
 ## CURRENT STATE
 
-**Last completed step:** Phase 1 complete (Steps 1-8) + debugging fixes
-**Currently working on:** Phase 2 starting at STEP 10
-**Last instance notes:** Full pipeline works end-to-end with real CV. Opus 4.6 for vision, Sonnet 4 for optimization. Font sanitizer handles Docker font limitations. H&M Data Engineering internship as sample job. Next: improve prompts with template LaTeX, add green diff highlighting, rework frontend.
+**Last completed step:** Landing page redesign with B&W palette, animated background paths, glass buttons, dark/light mode, sticky hero, persistent navbar.
+**Currently working on:** Steps 21-23 (Upload flow, Job card, Results showcase — still need redesign to match new B&W glass aesthetic)
+**Last instance notes:** Full design overhaul complete. Palette switched to B&W with light/dark mode (next-themes). Animated SVG background paths via framer-motion (memoized, reduced opacity). Glass button component from 21st.dev/easemize with official CSS (3D press, conic gradient borders, shine overlay, oklch relative colors). Always-visible navbar with GlassButton items ("Find jobs", "Upload CV", "Create account") + GlassButton icon theme toggle. Hero is h-screen sticky (no scroll). Footer uses bg-foreground/text-background for inverted contrast. CVUpload, ProcessingStatus, ComparisonView still use old shadcn Card/Button — need restyling in Steps 21-23.
 **Known blockers:** None

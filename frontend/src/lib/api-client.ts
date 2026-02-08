@@ -18,6 +18,7 @@ export async function processCV(id: string): Promise<{
   id: string;
   original_pdf_url: string;
   optimized_pdf_url: string;
+  highlighted_pdf_url: string;
   changes_summary: string;
 }> {
   const controller = new AbortController();
@@ -45,4 +46,8 @@ export function getOriginalPdfUrl(id: string): string {
 
 export function getOptimizedPdfUrl(id: string): string {
   return `${API_BASE}/api/cv/${id}/optimized`;
+}
+
+export function getHighlightedPdfUrl(id: string): string {
+  return `${API_BASE}/api/cv/${id}/highlighted`;
 }
