@@ -241,7 +241,7 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 ---
 
-### STEP 4: LaTeX Compilation + Optimization Pipeline `[→]`
+### STEP 4: LaTeX Compilation + Optimization Pipeline `[x]`
 **Scope:** Implement LaTeX-to-PDF compilation and the full optimization pipeline endpoint.
 
 **Actions:**
@@ -369,16 +369,18 @@ Each task is designed for ONE Claude Code instance. Work sequentially.
 
 _This section is updated by Claude instances as they complete tasks. Add entries with the date and what you learned._
 
-<!-- Example format:
-### 2025-01-15 — Step 2
-- PyMuPDF requires `pymupdf` not `fitz` as the pip package name
-- TexLive Docker install needs `--no-install-recommends` to keep image size reasonable
--->
+### 2026-02-08 — Steps 2-4 (Backend)
+- PyMuPDF installs as `PyMuPDF` but imports as `fitz` — both work fine
+- TexLive Docker install uses `--no-install-recommends` to keep image size reasonable
+- xelatex needs to run twice for proper cross-references
+- Claude vision API needs base64-encoded PNG images for PDF-to-LaTeX conversion
+- Anthropic SDK model ID: `claude-opus-4-6-20250219`
+- Use structured response format (---LATEX--- / ---SUMMARY---) for reliable parsing of optimize_latex output
 
 ---
 
 ## CURRENT STATE
 
-**Last completed step:** STEP 1 (repo init + GitHub remote)
-**Last instance notes:** Repo created at https://github.com/gusevm1/jobbmatch-beta-optimizer
+**Last completed step:** STEP 4 (LaTeX compilation + optimization pipeline)
+**Last instance notes:** Backend fully implemented — FastAPI with health check, PDF upload, Claude-based LaTeX generation, CV optimization, LaTeX compilation, and file serving endpoints. Docker + TexLive configured.
 **Known blockers:** None
