@@ -42,7 +42,8 @@ IMPORTANT: Do NOT skip tasks or work on tasks out of order unless a task explici
 | Backend framework | FastAPI (Python) | Async, auto OpenAPI docs, great for AI workloads |
 | Frontend framework | Next.js 14+ (App Router) | Modern React, good DX |
 | UI components | shadcn/ui + TailwindCSS | Beautiful defaults, customizable |
-| AI model | Claude Opus 4.6 (`claude-opus-4-6-20250219`) | Best vision + writing quality |
+| AI model (vision) | Claude Opus 4.6 (`claude-opus-4-6`) | Best vision + LaTeX generation quality |
+| AI model (optimization) | Claude Sonnet 4 (`claude-sonnet-4-20250514`) | Cost-effective for text rewriting |
 | PDF → LaTeX | Claude vision API | Send PDF pages as images, get LaTeX back |
 | LaTeX → PDF | TexLive (xelatex) in Docker | Full Unicode support, reliable |
 | Job description | JSON file in repo (`examples/sample-job.json`) | Simple, easy to swap for demo |
@@ -171,248 +172,167 @@ Note: The `/api/cv/process` endpoint runs the entire pipeline in one call (conve
 
 ---
 
-## TODO — IMPLEMENTATION TASKS
+## TODO — PHASE 1 (COMPLETE)
 
-Each task is designed for ONE Claude Code instance. Work sequentially.
-
-### STEP 1: Repository Initialization + GitHub Remote `[x]`
-**Scope:** Initialize the project repository and push to GitHub.
-
-**Actions:**
-1. Run `git init` in the project root
-2. Create `.gitignore` with entries for: `data/`, `node_modules/`, `__pycache__/`, `.env`, `*.pyc`, `.next/`, `dist/`, `.venv/`, `*.pdf` (in data/), `.DS_Store`
-3. Create `.env.example` with: `ANTHROPIC_API_KEY=your-api-key-here`, `BACKEND_PORT=8000`, `FRONTEND_URL=http://localhost:3000`
-4. Create a minimal `README.md` with project name and one-line description
-5. Create directory structure with `.gitkeep` files: `backend/src/api/routes/`, `backend/src/services/`, `backend/src/models/`, `backend/tests/`, `frontend/src/`, `examples/`, `data/uploads/`, `data/generated/`
-6. Create GitHub repo: `gh repo create jobbmatch-beta-optimizer --public --source=. --remote=origin`
-7. Initial commit and push to `main`
-
-**Verification:** `git remote -v` shows GitHub remote. `git log` shows initial commit. GitHub repo page loads.
+Steps 1-8 are done. See git log for full history. Phase 1 delivered:
+- Backend: FastAPI + Docker/TexLive, PDF upload, Claude vision LaTeX generation, optimization, compilation
+- Frontend: Next.js 16, drag-drop upload, processing states, side-by-side PDF comparison
+- Bug fixes: model IDs, error logging, font sanitization, frontend error handling, fetch timeouts
 
 ---
 
-### STEP 2: Backend Foundation `[x]`
-**Scope:** Set up FastAPI skeleton with health check, CORS, config, and Docker.
+## TODO — PHASE 2: PROMPT ENGINEERING, DIFF HIGHLIGHTING, FRONTEND REWORK
+
+Phase 2 focuses on three areas: (A) better LaTeX generation using example source code, (B) green diff highlighting in the optimized PDF, and (C) a polished frontend experience.
+
+### STEP 10: Improve LaTeX Generation Prompt with Example Template `[ ]`
+**Scope:** Instead of letting Claude invent LaTeX from scratch, provide the actual CV LaTeX template as a reference so the output matches the original formatting perfectly.
+
+**Context:** The user has actual LaTeX source code for the CV at `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex`. This is a well-structured template using custom commands (`\resumeSubheading`, `\resumeItem`, etc.) that compiles cleanly with pdflatex. We should use this as the basis.
+
+**Key insight:** Instead of vision-to-LaTeX (which often produces broken/different LaTeX), we should:
+1. Send the CV images to Claude along with the **reference LaTeX template**
+2. Ask Claude to fill in the template structure with the content it sees in the images
+3. This ensures the output LaTeX compiles reliably and matches the original layout
 
 **Actions:**
-1. Create `backend/pyproject.toml` with project metadata
-2. Create `backend/requirements.txt`:
-   - `fastapi>=0.109.0`
-   - `uvicorn[standard]>=0.27.0`
-   - `python-multipart>=0.0.6`
-   - `anthropic>=0.43.0`
-   - `PyMuPDF>=1.23.0` (fitz — for PDF to image)
-   - `pydantic>=2.5.0`
-   - `pydantic-settings>=2.1.0`
-   - `python-dotenv>=1.0.0`
-3. Create `backend/src/__init__.py` (empty)
-4. Create `backend/src/config.py` — Pydantic Settings class reading from `.env`
-5. Create `backend/src/main.py` — FastAPI app with CORS middleware, include health router
-6. Create `backend/src/api/__init__.py` and `backend/src/api/routes/__init__.py`
-7. Create `backend/src/api/routes/health.py` — `GET /api/health` returning `{"status": "ok"}`
-8. Create `backend/Dockerfile`:
-   - Base: `python:3.12-slim`
-   - Install TexLive: `texlive-xetex texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra`
-   - Install Python deps
-   - Copy source, run uvicorn
-9. Create `docker-compose.yml` with backend service (port 8000, env file, volume for data/)
-10. Commit and push: `chore(backend): initialize FastAPI skeleton with Docker + TexLive`
+1. Copy the template to `examples/cv-template.tex` (sanitized, with placeholder content)
+2. Update `backend/src/services/anthropic_client.py` — `generate_latex_from_images()`:
+   - Load the template from `examples/cv-template.tex`
+   - New prompt strategy: "Here is a LaTeX CV template. Here are images of a CV. Reproduce the CV content using this exact LaTeX template structure. Keep all the custom commands and preamble identical. Only change the content within \\begin{document}...\\end{document}."
+   - This drastically improves compilation reliability
+3. Update `latex_compiler.py` — switch from `xelatex` to `pdflatex` since the template uses standard LaTeX (no fontspec needed). Remove the font sanitizer if no longer needed.
+4. Test: upload the test CV PDF, verify the generated LaTeX matches the template structure
+5. Commit and push
 
-**Verification:** `cd backend && pip install -r requirements.txt && uvicorn src.main:app --port 8000` → `curl localhost:8000/api/health` returns `{"status":"ok"}`
+**Reference LaTeX template preamble (from IntroCV.Mall.Overleaf.tex):**
+```latex
+\documentclass[letterpaper,11pt]{article}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+% ... custom commands: \resumeSubheading, \resumeItem, etc.
+```
+
+**Important:** The template uses `pdflatex`-compatible packages (no fontspec/xelatex needed). This simplifies compilation.
+
+**Verification:** Generated LaTeX compiles on first try. Output PDF closely matches the original CV layout.
 
 ---
 
-### STEP 3: PDF Upload + LaTeX Generation Service `[x]`
-**Scope:** Implement PDF upload, PDF-to-image conversion, and Claude-based LaTeX generation.
+### STEP 11: Add Diff Highlighting (Green Text) in Optimized PDF `[ ]`
+**Scope:** When the optimizer changes text, mark the changes with green bold text in a "highlighted" version of the PDF. The downloadable version should be clean (no highlighting).
+
+**Approach:** The backend compiles THREE versions of the LaTeX:
+1. `{id}_original.pdf` — original CV faithfully reproduced
+2. `{id}_optimized.pdf` — clean optimized version (for download)
+3. `{id}_highlighted.pdf` — optimized version with changes marked in **green bold** (for side-by-side comparison)
 
 **Actions:**
-1. Create `backend/src/models/cv.py` — Pydantic models: `CVUploadResponse(id, filename)`, `CVProcessRequest(id)`, `CVProcessResponse(id, original_pdf_url, optimized_pdf_url, changes_summary)`
-2. Create `backend/src/services/anthropic_client.py` — Thin wrapper around Anthropic SDK. Initialize with API key from config. Method: `generate_latex_from_images(images: list[bytes]) -> str` and `optimize_latex(latex: str, job_description: dict) -> tuple[str, str]` (returns optimized_latex, changes_summary)
-3. Create `backend/src/services/pdf_parser.py` — Method: `pdf_to_images(pdf_path: Path) -> list[bytes]`. Uses PyMuPDF to render each page as a PNG image (300 DPI). Returns list of image bytes.
-4. Create `backend/src/services/latex_generator.py` — Method: `generate_latex(images: list[bytes]) -> str`. Sends images to Claude with a carefully crafted prompt asking it to reproduce the CV as LaTeX. The prompt should emphasize: reproduce the layout faithfully, use standard LaTeX packages, make it compilable with xelatex.
-5. Create `backend/src/api/routes/cv.py`:
-   - `POST /api/cv/upload` — Accept multipart file upload, save to `data/uploads/{uuid}.pdf`, return id
-   - Wire up the router in `main.py`
-6. Create `backend/src/services/__init__.py`
-7. Create `backend/src/models/__init__.py`
-8. Commit and push: `feat(backend): add PDF upload and Claude LaTeX generation service`
+1. Update `backend/src/services/anthropic_client.py` — `optimize_latex()`:
+   - Change the prompt to ask Claude to return TWO versions:
+     - A clean optimized LaTeX (for the downloadable PDF)
+     - A highlighted LaTeX where changed/added text is wrapped in `\textcolor{green}{\textbf{...}}`
+   - Use format: `---CLEAN_LATEX---`, `---HIGHLIGHTED_LATEX---`, `---SUMMARY---`
+   - Requires adding `\usepackage{xcolor}` to the highlighted version's preamble
+2. Update `backend/src/services/cv_optimizer.py` — return 3 values: `(clean_latex, highlighted_latex, summary)`
+3. Update `backend/src/models/cv.py` — `CVProcessResponse` now includes `highlighted_pdf_url`
+4. Update `backend/src/api/routes/cv.py`:
+   - Compile all three PDFs: original, clean optimized, highlighted optimized
+   - Add `GET /api/cv/{id}/highlighted` endpoint
+   - Return `highlighted_pdf_url` in the process response
+5. Commit and push
 
-**Verification:** Upload a test PDF via curl. Check that image extraction works. Check that Claude returns compilable LaTeX (manual inspection of response).
+**Verification:** The highlighted PDF shows green bold text where changes were made. The clean optimized PDF has no color markup. Both compile successfully.
 
 ---
 
-### STEP 4: LaTeX Compilation + Optimization Pipeline `[x]`
-**Scope:** Implement LaTeX-to-PDF compilation and the full optimization pipeline endpoint.
+### STEP 12: Frontend Rework — Three-Panel Comparison `[ ]`
+**Scope:** Redesign the comparison view to show the highlighted version and provide a clean download.
 
 **Actions:**
-1. Create `backend/src/services/latex_compiler.py` — Method: `compile_latex(latex: str, output_dir: Path) -> Path`. Writes `.tex` file, runs `xelatex` via subprocess (with timeout), returns path to compiled PDF. Handle compilation errors gracefully.
-2. Create `backend/src/services/cv_optimizer.py` — Method: `optimize_cv(latex: str, job_description: dict) -> tuple[str, str]`. Sends LaTeX + job JSON to Claude with prompt: "Make minimal, targeted changes to this CV's content to better match this job description. Keep the same LaTeX structure and formatting. Only adjust wording, add relevant keywords, or slightly rephrase bullet points. Return the complete modified LaTeX. Also provide a brief summary of changes made." Returns (optimized_latex, changes_summary).
-3. Create `examples/sample-job.json` — A realistic software engineering job description with title, company, description, requirements (required + preferred), and keywords.
-4. Add `POST /api/cv/process` endpoint to `cv.py`:
-   - Load PDF from `data/uploads/{id}.pdf`
-   - Convert to images → send to Claude → get LaTeX
-   - Load `examples/sample-job.json`
-   - Send LaTeX + job to optimizer → get optimized LaTeX + summary
-   - Compile original LaTeX → `data/generated/{id}_original.pdf`
-   - Compile optimized LaTeX → `data/generated/{id}_optimized.pdf`
-   - Return URLs for both PDFs + changes summary
-5. Add `GET /api/cv/{id}/original` and `GET /api/cv/{id}/optimized` — Serve the PDF files via `FileResponse`
-6. Commit and push: `feat(backend): add LaTeX compilation and full CV optimization pipeline`
+1. Update `frontend/src/types/index.ts` — add `highlighted_pdf_url` to `CVProcessResponse`
+2. Update `frontend/src/lib/api-client.ts` — add `getHighlightedPdfUrl(id)` helper
+3. Redesign `frontend/src/components/comparison-view.tsx`:
+   - Left panel: "Original CV" (original PDF)
+   - Right panel: "Optimized CV" (highlighted PDF — shows green changes)
+   - Below: changes summary text
+   - Download button downloads the **clean** optimized PDF (no green highlighting)
+   - "Start Over" button
+4. Improve overall page layout:
+   - Job description info shown (title, company) so user knows what they're optimizing for
+   - Better responsive design
+   - Nicer processing animation
+5. Commit and push
 
-**Verification:** Upload PDF via `/api/cv/upload`, then call `/api/cv/process` with the returned ID. Check that two PDFs are generated and downloadable. Verify changes_summary describes the modifications.
+**Verification:** Side-by-side shows original vs highlighted. Green text is visible in the right panel. Download gives clean PDF without green marks.
 
 ---
 
-### STEP 5: Frontend Foundation `[x]`
-**Scope:** Initialize Next.js project with TailwindCSS and shadcn/ui.
+### STEP 13: End-to-End Testing + Final Polish `[ ]`
+**Scope:** Full integration test with the real CV and H&M job description.
 
 **Actions:**
-1. Run `npx create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"` (answer prompts appropriately)
-2. `cd frontend && npx shadcn@latest init` — choose defaults (New York style, slate base color)
-3. Add shadcn components we'll need: `npx shadcn@latest add button card progress`
-4. Create `frontend/src/lib/api-client.ts` — Functions: `uploadCV(file: File): Promise<{id: string}>`, `processCV(id: string): Promise<{original_pdf_url, optimized_pdf_url, changes_summary}>`, `getOriginalPdfUrl(id: string): string`, `getOptimizedPdfUrl(id: string): string`. Base URL from env var `NEXT_PUBLIC_API_URL` defaulting to `http://localhost:8000`.
-5. Create `frontend/src/types/index.ts` — TypeScript types matching backend models
-6. Update `frontend/src/app/layout.tsx` — Clean layout with app title
-7. Create minimal `frontend/src/app/page.tsx` — Just a heading and placeholder text
-8. Configure `next.config.js` to allow backend URL for API calls
-9. Commit and push: `feat(frontend): initialize Next.js with TailwindCSS and shadcn/ui`
+1. Test full flow: upload Mathias's CV → get highlighted comparison → download clean PDF
+2. Verify the LaTeX template approach produces reliable, compilable output
+3. Verify green highlighting is clear and accurate
+4. Verify clean download has no color artifacts
+5. Docker rebuild and test: `docker-compose down && docker-compose up --build`
+6. Update README if needed
+7. Commit and push
 
-**Verification:** `cd frontend && npm run dev` → page loads at localhost:3000 without errors.
+**Test CV:** `/Users/maximgusev/workspace/CV-stuff/Mathias_Gren_CV_Mall_med_Intro_att_Dela.pdf`
+**Test LaTeX source:** `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex`
+**Job description:** `examples/sample-job.json` (H&M Data Engineering Summer Internship)
+
+**Verification:** Full demo works smoothly. Highlighted changes are readable. Download is clean.
 
 ---
 
-### STEP 6: Frontend — Upload Component + Processing Flow `[x]`
-**Scope:** Build the CV upload component with drag-and-drop and processing state management.
+## REFERENCE FILES
 
-**Actions:**
-1. Create `frontend/src/components/cv-upload.tsx`:
-   - Drag-and-drop zone for PDF files (accept only .pdf)
-   - File validation (type, size limit)
-   - Upload button trigger
-   - Shows selected filename
-   - Calls `uploadCV()` then `processCV()` from api-client
-   - Emits events/callbacks for state changes: idle → uploading → processing → done/error
-2. Create `frontend/src/components/processing-status.tsx`:
-   - Shows current pipeline stage with progress animation
-   - Stages: "Uploading CV..." → "Analyzing CV layout..." → "Optimizing for job match..." → "Generating PDF..."
-   - Uses shadcn Progress component
-3. Update `frontend/src/app/page.tsx`:
-   - When idle: show upload component centered on page
-   - When processing: show processing status
-   - When done: show comparison view (placeholder for now, built in step 7)
-4. Commit and push: `feat(frontend): add CV upload with drag-drop and processing states`
+These files are available for development/testing:
 
-**Verification:** Upload a PDF. See the processing states animate. Backend receives the file (check server logs).
-
----
-
-### STEP 7: Frontend — Side-by-Side PDF Comparison `[x]`
-**Scope:** Build the PDF viewer and side-by-side comparison view.
-
-**Actions:**
-1. Install `react-pdf` or `@react-pdf-viewer/core` for PDF rendering in browser
-2. Create `frontend/src/components/pdf-viewer.tsx`:
-   - Renders a PDF from a URL
-   - Scrollable, zoomable
-   - Page navigation
-3. Create `frontend/src/components/comparison-view.tsx`:
-   - Two PDF viewers side by side (responsive — stacked on mobile)
-   - Labels: "Original CV" and "Optimized CV"
-   - Changes summary section below (text list of what was changed)
-   - Download button for optimized PDF
-   - "Start Over" button to upload a new CV
-4. Wire into `page.tsx` — show comparison view when processing is complete
-5. Add shadcn components if needed: `npx shadcn@latest add badge separator scroll-area`
-6. Commit and push: `feat(frontend): add side-by-side PDF comparison view`
-
-**Verification:** Full end-to-end test: upload PDF → wait for processing → see both PDFs side by side → download optimized PDF → "Start Over" works.
-
----
-
-### STEP 8: Integration Testing + Polish `[x]`
-**Scope:** End-to-end testing, error handling, and demo readiness.
-
-**Actions:**
-1. Test the full flow end-to-end with a real CV PDF
-2. Add error handling:
-   - Backend: proper error responses for invalid files, Claude API failures, LaTeX compilation errors
-   - Frontend: error toasts/alerts, retry button
-3. Add loading skeleton states
-4. Ensure CORS works correctly between frontend (3000) and backend (8000)
-5. Test Docker Compose setup: `docker-compose up` should bring up everything
-6. Update README.md with:
-   - Project description
-   - Setup instructions (env vars, Docker)
-   - Demo instructions
-7. Final cleanup: remove unused boilerplate, check for TODO comments
-8. Commit and push: `chore: integration testing and demo polish`
-
-**Verification:** `docker-compose up`, open `localhost:3000`, upload CV, see results. No console errors. All error states handled gracefully.
-
----
-
-### STEP 9 (STRETCH): Diff Highlighting `[ ]`
-**Scope:** Highlight the differences between original and optimized PDFs.
-
-**Note:** This is a stretch goal. The core demo works without it.
-
-**Possible approaches:**
-- Text-level diff: Extract text from both PDFs, run diff, highlight changed sections in the summary
-- Visual overlay: Not practical for a demo
-- Change annotations: List specific line/section changes alongside the PDFs
-
-**Actions:** TBD based on approach chosen. Discuss with user before implementing.
+| File | Path | Purpose |
+|------|------|---------|
+| Test CV (PDF) | `/Users/maximgusev/workspace/CV-stuff/Mathias_Gren_CV_Mall_med_Intro_att_Dela.pdf` | Real CV for end-to-end testing |
+| LaTeX template source | `/Users/maximgusev/workspace/CV-stuff/IntroCV.Mall.Overleaf.tex` | Reference LaTeX template — use as basis for prompt engineering |
+| Job description | `examples/sample-job.json` | H&M Data Engineering Summer Internship |
 
 ---
 
 ## LESSONS LEARNED
 
-_This section is updated by Claude instances as they complete tasks. Add entries with the date and what you learned._
+_This section is updated by Claude instances as they complete tasks._
 
-### 2026-02-08 — Steps 2-4 (Backend)
-- PyMuPDF installs as `PyMuPDF` but imports as `fitz` — both work fine
+### 2026-02-08 — Phase 1
+- PyMuPDF installs as `PyMuPDF` but imports as `fitz`
 - TexLive Docker install uses `--no-install-recommends` to keep image size reasonable
 - xelatex needs to run twice for proper cross-references
-- Claude vision API needs base64-encoded PNG images for PDF-to-LaTeX conversion
-- Anthropic SDK model ID: `claude-opus-4-6-20250219`
-- Use structured response format (---LATEX--- / ---SUMMARY---) for reliable parsing of optimize_latex output
+- Claude vision API needs base64-encoded PNG images
+- Correct model IDs: `claude-opus-4-6` (no date suffix), `claude-sonnet-4-20250514`
+- Use structured response format (---LATEX--- / ---SUMMARY---) for reliable parsing
+- fontspec in Docker only has DejaVu fonts — add a font sanitizer or avoid fontspec entirely
+- The reference LaTeX template uses pdflatex (no fontspec) which is much more reliable in Docker
+- `examples/` dir must be mounted as a Docker volume (it's outside the backend build context)
+- Backend error logging middleware is essential for debugging in Docker
+- Frontend needs to parse JSON error body from backend, not just use `res.statusText`
+- Add generous fetch timeout (5 min) for the process endpoint — it calls Claude twice + compiles LaTeX
 
 ---
 
 ## CURRENT STATE
 
-**Last completed step:** STEP 8 (Integration testing + polish)
-**Last instance notes:** All core steps (1-8) complete. Integration testing revealed bugs that need fixing.
-**Known blockers:** See DEBUGGING TASKS below
-
----
-
-## DEBUGGING TASKS (post-Step 8)
-
-Issues discovered during live end-to-end testing with Docker:
-
-### BUG 1: Wrong Anthropic model ID `[→]`
-**File:** `backend/src/services/anthropic_client.py` line 7
-**Error:** `Error code: 404 - model: claude-opus-4-6-20250219`
-**Root cause:** The model ID `claude-opus-4-6-20250219` is not valid. Need to use the correct model identifier.
-**Fix:** Change MODEL to a valid model ID. Check Anthropic API docs or use `claude-sonnet-4-5-20250514` as a reliable alternative. The correct Opus 4.6 ID may be `claude-opus-4-6-20250609`.
-
-### BUG 2: No server-side error logging `[ ]`
-**File:** `backend/src/main.py`
-**Problem:** 500 errors don't show tracebacks in Docker logs — only the HTTP status line. Makes debugging very difficult.
-**Fix:** Add exception logging middleware or configure Python logging to print tracebacks to stdout.
-
-### BUG 3: Frontend shows generic "Failed to fetch" / "Internal Server Error" `[ ]`
-**File:** `frontend/src/lib/api-client.ts`
-**Problem:** The frontend only shows `res.statusText` which is generic. Should parse the JSON error detail from the backend response.
-**Fix:** In `uploadCV` and `processCV`, read the response body for error detail:
-```typescript
-if (!res.ok) {
-  const body = await res.json().catch(() => null);
-  throw new Error(body?.detail || `Processing failed: ${res.statusText}`);
-}
-```
-
-### BUG 4: Process endpoint timeout risk `[ ]`
-**Problem:** The `/api/cv/process` endpoint runs the full pipeline (PDF→images→Claude→LaTeX→optimize→compile) synchronously. This can take 60-120+ seconds. Browser fetch may timeout.
-**Potential fix:** For now, document that processing takes time. Long-term: consider SSE or polling.
+**Last completed step:** Phase 1 complete (Steps 1-8) + debugging fixes
+**Currently working on:** Phase 2 starting at STEP 10
+**Last instance notes:** Full pipeline works end-to-end with real CV. Opus 4.6 for vision, Sonnet 4 for optimization. Font sanitizer handles Docker font limitations. H&M Data Engineering internship as sample job. Next: improve prompts with template LaTeX, add green diff highlighting, rework frontend.
+**Known blockers:** None
