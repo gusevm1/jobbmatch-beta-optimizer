@@ -1,3 +1,5 @@
+import type { CVAnalyzeResponse, CVApplyResponse } from "@/types";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function uploadCV(file: File): Promise<{ id: string; filename: string }> {
@@ -50,4 +52,55 @@ export function getOptimizedPdfUrl(id: string): string {
 
 export function getHighlightedPdfUrl(id: string): string {
   return `${API_BASE}/api/cv/${id}/highlighted`;
+}
+
+export async function analyzeCV(
+  cvId: string,
+  job: { title: string; company: string; location: string; type: string; description: string; keywords?: string[] }
+): Promise<CVAnalyzeResponse> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 300000); // 5 min
+  try {
+    const res = await fetch(`${API_BASE}/api/cv/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cv_id: cvId, job }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail || `Analysis failed: ${res.statusText}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export async function applyChanges(
+  cvId: string,
+  jobId: string,
+  acceptedChangeIds: string[]
+): Promise<CVApplyResponse> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000); // 2 min
+  try {
+    const res = await fetch(`${API_BASE}/api/cv/apply`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cv_id: cvId,
+        job_id: jobId,
+        accepted_change_ids: acceptedChangeIds,
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail || `Apply failed: ${res.statusText}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }

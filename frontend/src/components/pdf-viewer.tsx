@@ -52,12 +52,22 @@ export function PdfViewer({ url }: PdfViewerProps) {
         }
       >
         {Array.from({ length: numPages }, (_, i) => (
-          <Page
-            key={i + 1}
-            pageNumber={i + 1}
-            width={500}
-            className="mx-auto"
-          />
+          <div key={i + 1}>
+            {i > 0 && (
+              <div className="flex items-center gap-3 py-2 px-4">
+                <div className="h-px flex-1 bg-gray-200" />
+                <span className="text-[10px] font-mono text-gray-400">
+                  Page {i + 1}
+                </span>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+            )}
+            <Page
+              pageNumber={i + 1}
+              width={500}
+              className="mx-auto"
+            />
+          </div>
         ))}
       </Document>
     </div>

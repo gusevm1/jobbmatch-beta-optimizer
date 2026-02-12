@@ -30,9 +30,12 @@ IMPORTANT: Do NOT skip tasks or work on tasks out of order unless a task explici
 3. Enters keywords → clicks "Find Jobs"
 4. Sees a grid of job listings (1 real + 5 demo)
 5. Clicks "Optimize CV" on a job card
-6. Backend: PDF → LaTeX (Claude vision) → optimize (Claude) → compile → 3 PDFs
-7. Frontend shows original vs optimized PDF side-by-side with green diff highlights
-8. User can download the clean optimized PDF
+6. Three-step wizard:
+   - Step 1 "See Your Difference": Score ring + issues/strengths analysis
+   - Step 2 "Align Your Resume": View all suggested per-bullet changes grouped by section
+   - Step 3 "Review Your Resume": Accept/reject individual changes with toggles
+7. Click "Finalize" → backend applies accepted changes, compiles PDFs
+8. Side-by-side PDF comparison (original vs highlighted) + download clean PDF
 
 ---
 

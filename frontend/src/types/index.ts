@@ -39,3 +39,40 @@ export type ProcessingStage =
   | "processing"
   | "done"
   | "error";
+
+export interface AnalysisIssue {
+  text: string;
+  severity: "high" | "medium" | "low";
+}
+
+export interface AnalysisStrength {
+  text: string;
+}
+
+export interface ChangeProposal {
+  id: string;
+  section: string;
+  original_text: string;
+  proposed_text: string;
+  reason: string;
+  impact: "high" | "medium" | "low";
+}
+
+export interface CVAnalyzeResponse {
+  cv_id: string;
+  job_id: string;
+  score: number;
+  score_label: string;
+  issues: AnalysisIssue[];
+  strengths: AnalysisStrength[];
+  changes: ChangeProposal[];
+}
+
+export interface CVApplyResponse {
+  cv_id: string;
+  original_pdf_url: string;
+  optimized_pdf_url: string;
+  highlighted_pdf_url: string;
+}
+
+export type WizardStep = "analyzing" | "score" | "changes" | "review" | "compiling" | "done" | "error";
