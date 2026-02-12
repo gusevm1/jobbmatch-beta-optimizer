@@ -8,6 +8,7 @@ import type { ChangeProposal } from "@/types";
 interface ReviewViewProps {
   changes: ChangeProposal[];
   acceptedIds: Set<string>;
+  selectedKeywords: string[];
   onToggle: (id: string) => void;
   onAcceptAll: () => void;
   onRejectAll: () => void;
@@ -15,9 +16,16 @@ interface ReviewViewProps {
   onBack: () => void;
 }
 
+const impactConfig = {
+  high: { label: "High", color: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+  medium: { label: "Med", color: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
+  low: { label: "Low", color: "bg-foreground/5 text-foreground/50" },
+};
+
 export function ReviewView({
   changes,
   acceptedIds,
+  selectedKeywords,
   onToggle,
   onAcceptAll,
   onRejectAll,
@@ -67,6 +75,30 @@ export function ReviewView({
         </div>
       </div>
 
+      {/* Keyword info banner */}
+      {selectedKeywords.length > 0 && (
+        <motion.div
+          className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3"
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <p className="text-xs text-amber-600 dark:text-amber-400 mb-1.5 font-medium">
+            Keywords to inject
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {selectedKeywords.map((kw) => (
+              <span
+                key={kw}
+                className="inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-600 dark:text-amber-400"
+              >
+                {kw}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Changes with toggles */}
       {grouped.map(([section, sectionChanges], sectionIdx) => (
         <motion.div
@@ -83,6 +115,7 @@ export function ReviewView({
           <div className="space-y-2">
             {sectionChanges.map((change) => {
               const isAccepted = acceptedIds.has(change.id);
+              const impact = impactConfig[change.impact as keyof typeof impactConfig] || impactConfig.low;
               return (
                 <button
                   key={change.id}
@@ -116,9 +149,14 @@ export function ReviewView({
                     </div>
 
                     <div className="flex-1 min-w-0 space-y-1.5">
-                      <p className="text-xs text-foreground/60 leading-relaxed">
-                        {change.reason}
-                      </p>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs text-foreground/60 leading-relaxed flex-1">
+                          {change.reason}
+                        </p>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-mono ${impact.color}`}>
+                          {impact.label}
+                        </span>
+                      </div>
                       <div className="flex items-start gap-2 text-[11px]">
                         <span className="text-red-400/60 line-through leading-relaxed flex-1">
                           {change.original_text.length > 80

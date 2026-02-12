@@ -58,11 +58,19 @@ export interface ChangeProposal {
   impact: "high" | "medium" | "low";
 }
 
+export interface SectionScore {
+  section: string;
+  relevance: "strong" | "moderate" | "weak";
+}
+
 export interface CVAnalyzeResponse {
   cv_id: string;
   job_id: string;
   score: number;
   score_label: string;
+  matched_keywords: string[];
+  missing_keywords: string[];
+  section_scores: SectionScore[];
   issues: AnalysisIssue[];
   strengths: AnalysisStrength[];
   changes: ChangeProposal[];
@@ -75,4 +83,4 @@ export interface CVApplyResponse {
   highlighted_pdf_url: string;
 }
 
-export type WizardStep = "analyzing" | "score" | "changes" | "review" | "compiling" | "done" | "error";
+export type WizardStep = "analyzing" | "configure" | "review" | "compiling" | "done" | "error";

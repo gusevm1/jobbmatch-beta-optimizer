@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 
 const STEPS = [
   { label: "See Your Difference", number: 1 },
-  { label: "Align Your Resume", number: 2 },
-  { label: "Review Your Resume", number: 3 },
+  { label: "Review Changes", number: 2 },
+  { label: "Your Optimized CV", number: 3 },
 ];
 
 interface StepIndicatorProps {

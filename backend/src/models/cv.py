@@ -45,6 +45,11 @@ class ChangeProposal(BaseModel):
     impact: str  # "high" | "medium" | "low"
 
 
+class SectionScore(BaseModel):
+    section: str
+    relevance: str  # "strong" | "moderate" | "weak"
+
+
 class CVAnalyzeRequest(BaseModel):
     cv_id: str
     job: JobDescription
@@ -55,6 +60,9 @@ class CVAnalyzeResponse(BaseModel):
     job_id: str
     score: int
     score_label: str
+    matched_keywords: list[str]
+    missing_keywords: list[str]
+    section_scores: list[SectionScore]
     issues: list[AnalysisIssue]
     strengths: list[AnalysisStrength]
     changes: list[ChangeProposal]

@@ -205,7 +205,10 @@ The landing page is done and looking good. Now we need to polish the CV upload e
 | JobGrid | `frontend/src/components/job-grid.tsx` | Grid of job listings |
 | JobCard | `frontend/src/components/job-card.tsx` | Expandable job card with actions |
 | ProcessingStatus | `frontend/src/components/processing-status.tsx` | Glass ring loading animation |
-| ComparisonView | `frontend/src/components/comparison-view.tsx` | Side-by-side PDF comparison + download |
+| AnalysisView | `frontend/src/components/wizard/analysis-view.tsx` | Step 1: Score + comparison table + section toggles + keyword selection |
+| ReviewView | `frontend/src/components/wizard/review-view.tsx` | Step 2: Accept/reject per-change with keyword banner |
+| FinalView | `frontend/src/components/wizard/final-view.tsx` | Step 3: PDF comparison + score improvement + download |
+| StepIndicator | `frontend/src/components/wizard/step-indicator.tsx` | 3-step progress indicator |
 | ThemeToggle | `frontend/src/components/theme-toggle.tsx` | Light/dark mode toggle |
 
 ---
@@ -237,6 +240,6 @@ The landing page is done and looking good. Now we need to polish the CV upload e
 
 ## CURRENT STATE
 
-**Last completed:** Phase 3 — Full landing page + new user flow (upload → keywords → jobs → optimize → results)
-**Next up:** Phase 4 — CV upload page visual polish
-**Known blockers:** None
+**Last completed:** Wizard UX overhaul — Jobright-inspired 3-step wizard (Analyze+Config → Review → Results)
+**Next up:** Phase 4 Steps 32-34 — Job grid polish, processing flow polish, E2E testing
+**Known blockers:** Cached analyses from before this change won't have matched/missing_keywords or section_scores fields (handled gracefully with defaults)

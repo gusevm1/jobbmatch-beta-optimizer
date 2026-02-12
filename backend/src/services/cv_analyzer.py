@@ -53,9 +53,14 @@ async def analyze_cv_for_job(latex: str, job_dict: dict, cv_id: str, job_id: str
         f"{latex_snippet}\n\n"
         "INSTRUCTIONS:\n"
         "1. Score the CV's match to the job (0-100) and give a label (e.g. 'Good Match', 'Needs Work').\n"
-        "2. List issues (gaps, missing keywords, weak phrasing) with severity: 'high', 'medium', or 'low'.\n"
-        "3. List strengths (what already matches well).\n"
-        "4. Propose specific text changes. Each change targets the INNER CONTENT of a \\resumeItem{...} line "
+        "2. Identify keywords: list which job keywords the CV already contains (matched_keywords) "
+        "and which are missing (missing_keywords). Keywords should be specific skills, tools, "
+        "technologies, certifications, or domain terms from the job description.\n"
+        "3. Assess each CV section's relevance to the job with section_scores. For each major section "
+        "(e.g. Summary, Skills, Experience, Education), give a relevance rating: 'strong', 'moderate', or 'weak'.\n"
+        "4. List issues (gaps, missing keywords, weak phrasing) with severity: 'high', 'medium', or 'low'.\n"
+        "5. List strengths (what already matches well).\n"
+        "6. Propose specific text changes. Each change targets the INNER CONTENT of a \\resumeItem{...} line "
         "or a similar text element -- NOT the LaTeX wrapper commands themselves.\n\n"
         "CRITICAL REQUIREMENT FOR original_text:\n"
         "- The `original_text` field MUST be an EXACT, CHARACTER-FOR-CHARACTER substring that appears "
@@ -76,6 +81,14 @@ async def analyze_cv_for_job(latex: str, job_dict: dict, cv_id: str, job_id: str
         "{\n"
         '  "score": <integer 0-100>,\n'
         '  "score_label": "<string like Good Match, Needs Work, Strong Match, etc.>",\n'
+        '  "matched_keywords": ["<keyword from job that IS in the CV>", ...],\n'
+        '  "missing_keywords": ["<keyword from job that is NOT in the CV>", ...],\n'
+        '  "section_scores": [\n'
+        '    {"section": "Summary", "relevance": "strong|moderate|weak"},\n'
+        '    {"section": "Skills", "relevance": "strong|moderate|weak"},\n'
+        '    {"section": "Experience", "relevance": "strong|moderate|weak"},\n'
+        '    {"section": "Education", "relevance": "strong|moderate|weak"}\n'
+        "  ],\n"
         '  "issues": [\n'
         '    {"text": "<issue description>", "severity": "high|medium|low"}\n'
         "  ],\n"
