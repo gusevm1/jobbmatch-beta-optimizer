@@ -55,7 +55,11 @@ async def generate_latex_from_images(images: list[bytes]) -> str:
             "- Use the same custom commands (\\resumeSubheading, \\resumeItem, \\resumeSubHeadingListStart, etc.) exactly as defined in the template.\n"
             "- Match the CV's sections, headings, dates, and bullet points faithfully from the images.\n"
             "- Add or remove \\resumeSubheading and \\resumeItem entries as needed to match the actual CV content — the template placeholders are just examples of the structure.\n"
-            "- Preserve the same \\vspace adjustments and formatting patterns shown in the template.\n"
+            "- Keep ALL bullet items under a single \\resumeSubheading in ONE \\resumeItemListStart/\\resumeItemListEnd block. "
+            "Do NOT split items (like GPA, Organizations, Coursework) into separate itemize blocks under the same subheading.\n"
+            "- Do NOT add manual \\vspace adjustments between items or between \\resumeItemListEnd and the next \\resumeSubheading. "
+            "The spacing built into the custom commands (\\resumeItem, \\resumeSubheading, \\resumeItemListEnd) is sufficient. "
+            "Only preserve the \\vspace values that appear in the PREAMBLE section formatting and header area — never add \\vspace in the document body between list items or subheadings.\n"
             "- Ensure all special characters are properly escaped for LaTeX.\n"
             "- Output ONLY the complete LaTeX document, no explanations or markdown fences."
         ),

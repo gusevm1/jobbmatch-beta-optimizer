@@ -9,6 +9,20 @@ from src.services.latex_compiler import compile_latex
 logger = logging.getLogger("uvicorn.error")
 
 
+def _normalize_vspace(latex: str) -> str:
+    """Strip aggressive manual \\vspace hacks from the document body.
+
+    The custom commands (\\resumeItem, \\resumeSubheading, \\resumeItemListEnd)
+    already have proper spacing built in. Any additional \\vspace{-Npt} lines
+    in the body (where N > 7) are manual hacks that break when text reflows.
+    This strips them to let the built-in spacing work naturally.
+    """
+    # Remove standalone \vspace{-Npt} lines where N > 7 (the aggressive hacks)
+    # Preserves vspace in preamble commands and reasonable small adjustments
+    latex = re.sub(r"^[ \t]*\\vspace\{-(?:[89]|[1-9]\d+)pt\}[ \t]*\n?", "", latex, flags=re.MULTILINE)
+    return latex
+
+
 def _sanitize_proposed_latex(text: str) -> str:
     """Escape bare LaTeX special characters in proposed text.
 
@@ -105,6 +119,10 @@ async def apply_changes_and_compile(
 
     # Apply accepted changes
     clean_latex, highlighted_latex = _apply_string_replacements(latex, changes, accepted_ids)
+
+    # Normalize spacing: strip aggressive manual \vspace hacks
+    clean_latex = _normalize_vspace(clean_latex)
+    highlighted_latex = _normalize_vspace(highlighted_latex)
 
     # Compile clean optimized PDF
     wizard_dir = generated_dir / "wizard" / job_id

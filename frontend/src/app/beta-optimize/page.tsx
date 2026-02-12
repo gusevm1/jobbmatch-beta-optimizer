@@ -188,9 +188,9 @@ export default function BetaOptimizePage() {
             key="configure"
             score={analysis.score}
             scoreLabel={analysis.score_label}
-            matchedKeywords={analysis.matched_keywords}
-            missingKeywords={analysis.missing_keywords}
-            sectionScores={analysis.section_scores}
+            matchedKeywords={analysis.matched_keywords ?? []}
+            missingKeywords={analysis.missing_keywords ?? []}
+            sectionScores={analysis.section_scores ?? []}
             issues={analysis.issues}
             strengths={analysis.strengths}
             changes={analysis.changes}
